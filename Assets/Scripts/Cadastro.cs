@@ -4,11 +4,12 @@ using UnityEngine.Networking;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
+
 public class Cadastro : MonoBehaviour
 
 {
 
-    private string urlFormulario = "http://localhost/Quiz/inserir.php";
+    private string urlFormulario = "https://studioszeley.000webhostapp.com/inserir.php";
     private string id, nome;
     public InputField InputNome;
     private Login _login;
@@ -35,7 +36,9 @@ public class Cadastro : MonoBehaviour
         form.AddField("nome", nome);
         form.AddField("id", id);
 
+
         UnityWebRequest itemdata = UnityWebRequest.Post(urlFormulario, form);
+
         yield return itemdata.SendWebRequest();
         print("Cadastrado");
         SceneManager.LoadScene(1);

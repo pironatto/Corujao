@@ -53,8 +53,9 @@ public class Login : MonoBehaviour
         print($"Id do usuario: {IdUsuario}");
 
         //PEGAR OS DADOS DO BANCO DE DADOS
-        using (UnityWebRequest cadastroUsuario = UnityWebRequest.Get("http://localhost/Quiz/consulta.php"))
+        using (UnityWebRequest cadastroUsuario = UnityWebRequest.Get("https://studioszeley.000webhostapp.com/consulta.php"))
         {
+
             yield return cadastroUsuario.SendWebRequest();
             string User = cadastroUsuario.downloadHandler.text;
             Usuario = User.Trim(); //PARA REMOVER ESPAÇOS EM BRANCO     
