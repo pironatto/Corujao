@@ -52,12 +52,18 @@ public class Login : MonoBehaviour
         IdUsuario = AuthenticationService.Instance.PlayerId;
         print($"Id do usuario: {IdUsuario}");
 
+        string id = IdUsuario.ToString();
+        WWWForm form = new WWWForm();
+        form.AddField("id", id);
+
         //PEGAR OS DADOS DO BANCO DE DADOS
-        using (UnityWebRequest cadastroUsuario = UnityWebRequest.Get("https://studioszeley.000webhostapp.com/consulta.php"))
+        using (UnityWebRequest cadastroUsuario = UnityWebRequest.Post("https://studioszeley.000webhostapp.com/consulta.php", form))
         {
+
 
             yield return cadastroUsuario.SendWebRequest();
             string User = cadastroUsuario.downloadHandler.text;
+            print(User);
             Usuario = User.Trim(); //PARA REMOVER ESPAÇOS EM BRANCO     
             if (IdUsuario == Usuario)
             {
