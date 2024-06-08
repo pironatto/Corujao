@@ -9,7 +9,7 @@ public class Cadastro : MonoBehaviour
 
 {
 
-    private string urlFormulario = "https://studioszeley.000webhostapp.com/inserir.php";
+    private string urlFormulario = "https://zeleystudios.servegame.com/corujao/inserir.php";
     private string id, nome;
     public InputField InputNome;
     private Login _login;
