@@ -44,4 +44,10 @@ public class Cadastro : MonoBehaviour
         SceneManager.LoadScene(1);
     }
 
+    public void EscolherTema()
+    {
+        SceneManager.LoadScene(2);
+        print("Escolheu");
+    }
+
 }

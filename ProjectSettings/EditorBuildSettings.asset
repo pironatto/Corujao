@@ -11,5 +11,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Jogo.unity
     guid: 6c665b1993ca62442ac549bd3f8fe0e1
+  - enabled: 1
+    path: Assets/Scenes/Perguntas.unity
+    guid: 5c3c07453cd337644863363562abf364
   m_configObjects:
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: f34787e9192790e4bb2d8fd6235c8fa8, type: 2}
