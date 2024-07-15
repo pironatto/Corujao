@@ -2,29 +2,35 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
+
+
 
 public class BancoDados : MonoBehaviour
 {
 
-    public string[] itens;     //ARMAZENAR OS ITENS
-    public List<string> id, nome;
+    private string[] itens;     //ARMAZENAR OS ITENS
+    public Text pergunta, r1, r2, r3, r4;
+
 
     // Start is called before the first frame update
     IEnumerator Start()
     {
+
         //ESPERAR ATÉ QUE O BANCO DE DADOS SEJA LIDO
-        using (UnityWebRequest itemdata = UnityWebRequest.Get("http://localhost/Quiz/consulta.php"))
+        using (UnityWebRequest itemdata = UnityWebRequest.Get("https://zeleystudios.servegame.com/corujao/perguntas.php"))
         {
             yield return itemdata.SendWebRequest();
             string itemDataString = itemdata.downloadHandler.text;
 
-            itens = itemDataString.Split(';');
+            itens = itemDataString.Split('-');
 
-            for (int i = 0; i < itens.Length - 1; i++)
-            {
-                id.Add(GetDataValue(itens[i], "id:"));
-                nome.Add(GetDataValue(itens[i], "nome:"));
-            }
+            pergunta.text = itens[2];
+            r1.text = itens[3];
+            r2.text = itens[4];
+            r3.text = itens[5];
+            r4.text = itens[6];
+
 
         }
 
@@ -37,21 +43,9 @@ public class BancoDados : MonoBehaviour
 
     }
 
-    //SEPARAR OS ITENS
-    private string GetDataValue(string data, string index)
-    {
-
-        string value = data.Substring(data.LastIndexOf(index) + index.Length);
-
-        if (value.Contains('|'))
-        {
-            value.Remove(value.IndexOf("|"));
-
-        }
 
 
-        return value;
-    }
+
 
 
 }
