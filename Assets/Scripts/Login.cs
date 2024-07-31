@@ -13,41 +13,30 @@ public class Login : MonoBehaviour
     private string Usuario;
     [HideInInspector]
     public string IdUsuario;
-    public GameObject PanelCadastro, Barra;
-    public Slider BarraProgresso;
-    private float currentTime;
-    private bool BarraCompleta;
+    public GameObject PanelCadastro;
 
 
     private async void Start()
     {
 
-        currentTime = 0;
-        BarraCompleta = false;
 
         await UnityServices.InitializeAsync(); // INICIALIZAR O SERVIÇO DE AUTENTICAÇÃO UNITY
         Debug.Log(UnityServices.State); // INFORMAR QUE O SERVIÇO ESTÁ ATIVO
-
         Conectar(); // AUTENTICAR O USUARIO COM A UNITY
-
+        StartCoroutine("VerificaCadastro"); //VERIFICAR OS DADOS DO USUARIO AUTENTICADO COM O BANCO DE DADOS
 
     }
 
     void Update()
     {
-        BarraLoad();
-        if (BarraCompleta == false && BarraProgresso.value >= 5)
-        {
-            StartCoroutine("VerificaCadastro"); //VERIFICAR OS DADOS DO USUARIO AUTENTICADO COM O BANCO DE DADOS
-        }
-
 
     }
 
 
     IEnumerator VerificaCadastro()
     {
-        BarraCompleta = true;
+
+        yield return new WaitForSeconds(2f);
         // Shows how to get the playerID
         IdUsuario = AuthenticationService.Instance.PlayerId;
         print($"Id do usuario: {IdUsuario}");
@@ -59,8 +48,6 @@ public class Login : MonoBehaviour
         //PEGAR OS DADOS DO BANCO DE DADOS
         using (UnityWebRequest cadastroUsuario = UnityWebRequest.Post("https://zeleystudios.servegame.com/corujao/consulta.php", form))
         {
-
-
             yield return cadastroUsuario.SendWebRequest();
             string User = cadastroUsuario.downloadHandler.text;
             print(User);
@@ -73,7 +60,6 @@ public class Login : MonoBehaviour
             {
                 print("Voce precisa se cadastrar");
                 PanelCadastro.SetActive(true);
-                Barra.SetActive(false);
 
             }
 
@@ -110,12 +96,5 @@ public class Login : MonoBehaviour
 
     }
 
-
-    public void BarraLoad()
-    {
-        currentTime += Time.deltaTime;
-        BarraProgresso.value = currentTime;
-
-    }
 
 }

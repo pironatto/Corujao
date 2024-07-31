@@ -36,12 +36,14 @@ public class controleTempo : MonoBehaviour
             SliderLoad();
         }
 
+
         if (BarraProgresso.value == 0 || _bancoDados.clickBotao == true)
         {
             tempoEsgotado = true;
             StartCoroutine("ChamarFade");
 
         }
+
 
     }
 

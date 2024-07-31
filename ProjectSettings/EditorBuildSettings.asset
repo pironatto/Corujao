@@ -9,7 +9,7 @@ EditorBuildSettings:
     path: Assets/Scenes/SampleScene.unity
     guid: 2cda990e2423bbf4892e6590ba056729
   - enabled: 1
-    path: Assets/Scenes/Jogo.unity
+    path: Assets/Scenes/Temas.unity
     guid: 6c665b1993ca62442ac549bd3f8fe0e1
   - enabled: 1
     path: Assets/Scenes/Perguntas.unity
@@ -17,5 +17,11 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Fade.unity
     guid: 9238e2ec3741d654c843f0a188ae9a98
+  - enabled: 1
+    path: Assets/Scenes/Espera.unity
+    guid: 19b4b44f5b6d5be4aa3836836ec146d3
+  - enabled: 1
+    path: Assets/Scenes/Provisoria.unity
+    guid: 1d184e9b47471274fbb7d5069e07cf7b
   m_configObjects:
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: f34787e9192790e4bb2d8fd6235c8fa8, type: 2}

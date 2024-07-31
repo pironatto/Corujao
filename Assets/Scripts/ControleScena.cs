@@ -20,6 +20,6 @@ public class ControleScena : MonoBehaviour
 
     public void ChamarFade()
     {
-        SceneManager.LoadScene(3);
+        SceneManager.LoadScene(1);
     }
 }

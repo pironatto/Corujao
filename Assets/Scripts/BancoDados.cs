@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 
@@ -12,25 +13,37 @@ public class BancoDados : MonoBehaviour
 {
 
     private string[] itens;     //ARMAZENAR OS ITENS
-    public TextMeshProUGUI r1, r2, r3, r4;
-    public Text pergunta;
+    public TextMeshProUGUI r1, r2, r3, r4, pergunta;
     public Button R1, R2, R3, R4;
     private controleTempo _controleTempo;
+    //  private ControleTemas _controleTemas;
     [HideInInspector]
     public bool clickBotao;
+    private string materia;
+
 
 
     // Start is called before the first frame update
-    IEnumerator Start()
+    void Start()
     {
-
         _controleTempo = FindObjectOfType(typeof(controleTempo)) as controleTempo;
+        StartCoroutine("VerificaPergunta");
+    }
+
+    IEnumerator VerificaPergunta()
+    {
+        //PARA ESCOLHER O TEMA
+        materia = ControleTemas.materia;
+        WWWForm form = new WWWForm();
+        form.AddField("materia", materia);
 
         //ESPERAR ATÉ QUE O BANCO DE DADOS SEJA LIDO
-        using (UnityWebRequest itemdata = UnityWebRequest.Get("https://zeleystudios.servegame.com/corujao/perguntas.php"))
+        using (UnityWebRequest itemdata = UnityWebRequest.Post("https://zeleystudios.servegame.com/corujao/perguntas.php", form))
         {
             yield return itemdata.SendWebRequest();
             string itemDataString = itemdata.downloadHandler.text;
+
+
 
             itens = itemDataString.Split('-');
 
@@ -39,7 +52,7 @@ public class BancoDados : MonoBehaviour
             r2.text = itens[4];
             r3.text = itens[5];
             r4.text = itens[6];
-            print(itens[7]);
+
 
         }
 
@@ -54,38 +67,41 @@ public class BancoDados : MonoBehaviour
 
     void verificaResposta()
     {
+
         if (_controleTempo.tempoEsgotado == true || clickBotao == true)
         {
+            if (itens[7] == "A") { R1.image.color = Color.green; }
+            if (itens[7] == "B") { R2.image.color = Color.green; }
+            if (itens[7] == "C") { R3.image.color = Color.green; }
+            if (itens[7] == "D") { R4.image.color = Color.green; }
+
             switch (itens[7])
             {
                 case "A":
-                    R1.image.color = Color.red;
+                    R1.image.color = Color.green;
                     break;
                 case "B":
-                    R2.image.color = Color.red;
+                    R2.image.color = Color.green;
                     break;
                 case "C":
-                    R3.image.color = Color.red;
+                    R3.image.color = Color.green;
                     break;
                 case "D":
-                    R4.image.color = Color.red;
+                    R4.image.color = Color.green;
                     break;
             }
         }
+
+
 
     }
 
     public void BotaoResposta()
     {
-        string botaoClicado = EventSystem.current.currentSelectedGameObject.name;
+        //string botaoClicado = EventSystem.current.currentSelectedGameObject.name;
         clickBotao = true;
 
     }
-
-
-
-
-
 
 
 

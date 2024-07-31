@@ -1,0 +1,30 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
+
+public class ControleTemas : MonoBehaviour
+{
+
+    [HideInInspector]
+    public static string materia;
+
+
+    public void ChamarTelaEspera()
+    {
+
+
+        string botaoClicado = EventSystem.current.currentSelectedGameObject.name;
+        if (botaoClicado == "BtHistoria") { materia = "historia"; SceneManager.LoadScene(4); }
+        if (botaoClicado == "BtCiencias") { materia = "ciencias"; SceneManager.LoadScene(4); }
+        if (botaoClicado == "BtMatematica") { materia = "matematica"; SceneManager.LoadScene(4); }
+        if (botaoClicado == "BtFisica") { materia = "fisica"; SceneManager.LoadScene(4); }
+        if (botaoClicado == "BtQuimica") { materia = "quimica"; SceneManager.LoadScene(5); }
+        if (botaoClicado == "BtGeografia") { materia = "geografia"; SceneManager.LoadScene(4); }
+        if (botaoClicado == "BtBiologia") { materia = "biologia"; SceneManager.LoadScene(4); }
+
+    }
+
+}

@@ -1,8 +1,9 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using TMPro;
+using JetBrains.Annotations;
 
 
 public class Cadastro : MonoBehaviour
@@ -10,15 +11,18 @@ public class Cadastro : MonoBehaviour
 {
 
     private string urlFormulario = "https://zeleystudios.servegame.com/corujao/inserir.php";
-    private string id, nome;
-    public InputField InputNome;
+    private string id, nome, erro;
+    public TMP_InputField InputNome;
+    public TextMeshProUGUI Erro;
     private Login _login;
 
 
     void Start()
     {
         _login = FindObjectOfType(typeof(Login)) as Login;
+
     }
+
 
     public void CadastrarNome()
     {
@@ -38,10 +42,27 @@ public class Cadastro : MonoBehaviour
 
 
         UnityWebRequest itemdata = UnityWebRequest.Post(urlFormulario, form);
-
         yield return itemdata.SendWebRequest();
-        print("Cadastrado");
-        SceneManager.LoadScene(1);
+        erro = itemdata.downloadHandler.text;
+
+
+        //ERRO 1062 SIGNIFICA "MYSQL_ER_DUP_ENTRY", OU SEJA ENTRADA DUPLICADA 
+        //ERRO 0 SIGNIFICA TUDO OK - O SISTEMA TRAZ DOIS ESPAÇOS INICIAIS
+        if (erro == "  0")
+        {
+            Erro.text = "Cadastro efetuado! Vamos começar...";
+            yield return new WaitForSeconds(3f);
+            SceneManager.LoadScene(1);
+
+        }
+        else
+        {
+            Erro.text = "Este nome já existe. Escolha outro.";
+            yield return new WaitForSeconds(2f);
+            Erro.text = "";
+            InputNome.text = "";
+        }
+
     }
 
     public void EscolherTema()

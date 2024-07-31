@@ -14,6 +14,8 @@ public class Fade : MonoBehaviour
     public Text Tempo;
     public AudioSource fxSource;
     public AudioClip fxCronometro;
+    [HideInInspector]
+    public static int numPerguntas;
 
     // Start is called before the first frame update
     void Start()
@@ -22,13 +24,15 @@ public class Fade : MonoBehaviour
         currentTime = 5;
         BarraCompleta = false;
         InvokeRepeating("AudioCronometro", 0.5f, 1f);
-
+        print(numPerguntas++);
+        ContadorCena();
     }
 
     // Update is called once per frame
     void Update()
     {
         BarraLoad();
+
         if (BarraCompleta == false && BarraProgresso.value == 0)
         {
             SceneManager.LoadScene(2);
@@ -50,5 +54,17 @@ public class Fade : MonoBehaviour
     private void AudioCronometro()
     {
         fxSource.PlayOneShot(fxCronometro);
+    }
+
+
+    //PARA LIMITAR A QUANTIDADE DE PERGUNTAS    
+    public void ContadorCena()
+    {
+        if (numPerguntas == 6)
+        {
+            SceneManager.LoadScene(1);
+            numPerguntas = 0;
+
+        }
     }
 }
