@@ -19,7 +19,7 @@ public class controleTempo : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        _bancoDados = FindObjectOfType(typeof(BancoDados)) as BancoDados;
+        _bancoDados = FindFirstObjectByType(typeof(BancoDados)) as BancoDados;
 
         //ACIONAR BARRA DE TEMPO
         currentTime = 10;
@@ -58,6 +58,7 @@ public class controleTempo : MonoBehaviour
 
     public void SliderLoad()
     {
+    
         currentTimeSlider += Time.deltaTime;
         SliderA.value = currentTimeSlider;
         SliderB.value = currentTimeSlider;
