@@ -62,7 +62,7 @@ public class Fade : MonoBehaviour
     {
         if (numPerguntas == 6)
         {
-            SceneManager.LoadScene(1);
+            SceneManager.LoadScene(6);
             numPerguntas = 0;
 
         }

@@ -11,10 +11,14 @@ public class controleTempo : MonoBehaviour
 
     private BancoDados _bancoDados;
     private float currentTime, currentTimeSlider;
+   
     public Slider BarraProgresso, SliderA, SliderB;
     public TextMeshProUGUI Tempo;
     [HideInInspector]
     public bool tempoEsgotado = false;
+    public static int contagemSlider;
+    
+  
 
     // Start is called before the first frame update
     void Start()
@@ -23,12 +27,13 @@ public class controleTempo : MonoBehaviour
 
         //ACIONAR BARRA DE TEMPO
         currentTime = 10;
-        currentTimeSlider = 0;
+        currentTimeSlider = contagemSlider; 
     }
 
     // Update is called once per frame
     void Update()
     {
+
         BarraLoad();
 
         if (tempoEsgotado == false)
@@ -36,14 +41,14 @@ public class controleTempo : MonoBehaviour
             SliderLoad();
         }
 
-
         if (BarraProgresso.value == 0 || _bancoDados.clickBotao == true)
         {
             tempoEsgotado = true;
+            contagemSlider = (int)currentTimeSlider;
+
+           
             StartCoroutine("ChamarFade");
-
         }
-
 
     }
 

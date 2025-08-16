@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Diagnostics;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -14,12 +15,14 @@ public class BancoDados : MonoBehaviour
     private string[] itens;     //ARMAZENAR OS ITENS
     public TextMeshProUGUI r1, r2, r3, r4, pergunta;
     public Button R1, R2, R3, R4;
-    private controleTempo _controleTempo;
+    private controleTempo _controleTempo;    
     //  private ControleTemas _controleTemas;
     [HideInInspector]
     public bool clickBotao;
     private string materia;
     public GameObject PainelRespostas;
+    public string botaoClicado,resposta,respostaCorreta;
+
 
 
     // Start is called before the first frame update
@@ -38,7 +41,7 @@ public class BancoDados : MonoBehaviour
         form.AddField("materia", materia);
 
         //ESPERAR ATÉ QUE O BANCO DE DADOS SEJA LIDO
-        using (UnityWebRequest itemdata = UnityWebRequest.Post("http://localhost/corujao//perguntas.php", form))
+        using (UnityWebRequest itemdata = UnityWebRequest.Post("https://zeleystudios.servegame.com/corujao//perguntas.php", form))
         {
             yield return itemdata.SendWebRequest();
             string itemDataString = itemdata.downloadHandler.text;
@@ -67,6 +70,8 @@ public class BancoDados : MonoBehaviour
     void Update()
     {
         verificaResposta();
+           
+       
     }
 
 
@@ -97,13 +102,32 @@ public class BancoDados : MonoBehaviour
             }
         }
 
-
+   
 
     }
 
     public void BotaoResposta()
     {
-        //string botaoClicado = EventSystem.current.currentSelectedGameObject.name;
+        //VER QUAL BOTAO FOI CLICADO   
+        botaoClicado = EventSystem.current.currentSelectedGameObject.name;
+        respostaCorreta = itens[7]; 
+
+        switch(botaoClicado){
+
+            case "R1":
+                resposta = "A";
+                break;
+            case "R2":
+                resposta = "B";
+                break;
+            case "R3":
+                resposta = "C"; 
+                break;
+            case "R4":
+
+                break;
+        }
+        //AVISAR QUE O BOTAO FOI CLICADO
         clickBotao = true;
 
     }

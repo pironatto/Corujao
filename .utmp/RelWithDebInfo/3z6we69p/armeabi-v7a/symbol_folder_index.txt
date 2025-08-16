@@ -1,0 +1,1 @@
+D:\ZeleyStudios\ProjetosUnity\Corujao\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\build\intermediates\cxx\RelWithDebInfo\3z6we69p\obj\armeabi-v7a
