@@ -612,7 +612,6 @@ GameObject:
   - component: {fileID: 443314438}
   - component: {fileID: 443314437}
   - component: {fileID: 443314439}
-  - component: {fileID: 443314440}
   m_Layer: 0
   m_Name: GameController
   m_TagString: Untagged
@@ -643,6 +642,10 @@ MonoBehaviour:
   R4: {fileID: 1211395597}
   clickBotao: 0
   PainelRespostas: {fileID: 1289773971}
+  botaoClicado: 
+  resposta: 
+  respostaCorreta: 
+  Acertou: 0
 --- !u!4 &443314438
 Transform:
   m_ObjectHideFlags: 0
@@ -675,19 +678,6 @@ MonoBehaviour:
   SliderB: {fileID: 164175062}
   Tempo: {fileID: 1478309621}
   tempoEsgotado: 0
---- !u!114 &443314440
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 443314436}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c0d04f1e816024b4aa6b282fbe09b430, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  pontuacao: 0
 --- !u!1 &518292646
 GameObject:
   m_ObjectHideFlags: 0

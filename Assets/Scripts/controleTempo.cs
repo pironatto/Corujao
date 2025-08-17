@@ -11,14 +11,16 @@ public class controleTempo : MonoBehaviour
 
     private BancoDados _bancoDados;
     private float currentTime, currentTimeSlider;
-   
     public Slider BarraProgresso, SliderA, SliderB;
     public TextMeshProUGUI Tempo;
+    public static int ValorSliderA;
+
+    private static int valorSlider1, valorSlider2, valorSlider3, valorSlider4, valorSlider5;
+    private bool valorSliderCapturado = false;
+
     [HideInInspector]
     public bool tempoEsgotado = false;
-    public static int contagemSlider;
-    
-  
+
 
     // Start is called before the first frame update
     void Start()
@@ -27,32 +29,59 @@ public class controleTempo : MonoBehaviour
 
         //ACIONAR BARRA DE TEMPO
         currentTime = 10;
-        currentTimeSlider = contagemSlider; 
+        SliderA.value = valorSlider1 + valorSlider2 + valorSlider3 + valorSlider4 + valorSlider5;
+        SliderB.value = valorSlider1 + valorSlider2 + valorSlider3 + valorSlider4 + valorSlider5; // SUBSTITUIR NO MULTIPLAYER       
     }
 
     // Update is called once per frame
     void Update()
     {
 
-        BarraLoad();
-
-        if (tempoEsgotado == false)
-        {
-            SliderLoad();
-        }
+        BarraLoad(); //MEDIDOR DE TEMPO
 
         if (BarraProgresso.value == 0 || _bancoDados.clickBotao == true)
         {
-            tempoEsgotado = true;
-            contagemSlider = (int)currentTimeSlider;
 
-           
+            //PEGAR VALOR DO SLIDER
+            if (!valorSliderCapturado && _bancoDados.Acertou == true)
+            {
+                if (valorSlider1 == 0)
+                {
+                    valorSlider1 = (int)BarraProgresso.value;
+
+                }
+                else if (valorSlider1 != 0 && valorSlider2 == 0)
+                {
+                    valorSlider2 = (int)BarraProgresso.value;
+                }
+                else if (valorSlider1 != 0 && valorSlider2 != 0 && valorSlider3 == 0)
+                {
+                    valorSlider3 = (int)BarraProgresso.value;
+                }
+
+                else if (valorSlider1 != 0 && valorSlider2 != 0 && valorSlider3 != 0 && valorSlider4 == 0)
+                {
+                    valorSlider4 = (int)BarraProgresso.value;
+                }
+
+                else if (valorSlider1 != 0 && valorSlider2 != 0 && valorSlider3 != 0 && valorSlider4 != 0 && valorSlider5 == 0)
+                {
+                    valorSlider5 = (int)BarraProgresso.value;
+                }
+
+                valorSliderCapturado = true;
+            }
+
+            tempoEsgotado = true;
+            SliderA.value = valorSlider1 + valorSlider2 + valorSlider3 + valorSlider4 + valorSlider5;
+            SliderB.value = SliderA.value; // SUBSTITUIR QUANDO TIVER MULTIPLAYER
+            ValorSliderA = (int)SliderA.value; //PARA PASSAR O VALOR DO SLIDER A PONTUACAO E CENA FADE
             StartCoroutine("ChamarFade");
         }
 
     }
 
-    public void BarraLoad()
+    public void BarraLoad()//MEDIDOR DE TEMPO
     {
         currentTime -= Time.deltaTime;
         BarraProgresso.value = currentTime;
@@ -61,21 +90,12 @@ public class controleTempo : MonoBehaviour
     }
 
 
-    public void SliderLoad()
-    {
-    
-        currentTimeSlider += Time.deltaTime;
-        SliderA.value = currentTimeSlider;
-        SliderB.value = currentTimeSlider;
-
-    }
-
     IEnumerator ChamarFade()
     {
         yield return new WaitForSeconds(2f);
         SceneManager.LoadScene(3);
 
-
     }
 
 }
+

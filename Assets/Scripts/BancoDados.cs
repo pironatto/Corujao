@@ -16,12 +16,13 @@ public class BancoDados : MonoBehaviour
     public TextMeshProUGUI r1, r2, r3, r4, pergunta;
     public Button R1, R2, R3, R4;
     private controleTempo _controleTempo;    
-    //  private ControleTemas _controleTemas;
+    private string botaoClicado, resposta, respostaCorreta;
+    private string materia;
+
     [HideInInspector]
     public bool clickBotao;
-    private string materia;
-    public GameObject PainelRespostas;
-    public string botaoClicado,resposta,respostaCorreta;
+    public GameObject PainelRespostas;    
+    public bool Acertou = false;    
 
 
 
@@ -30,7 +31,7 @@ public class BancoDados : MonoBehaviour
     {
         _controleTempo = FindFirstObjectByType(typeof(controleTempo)) as controleTempo;
         StartCoroutine("VerificaPergunta");
-        _controleTempo.enabled = false;
+        //_controleTempo.enabled = false;
     }
 
     IEnumerator VerificaPergunta()
@@ -40,7 +41,7 @@ public class BancoDados : MonoBehaviour
         WWWForm form = new WWWForm();
         form.AddField("materia", materia);
 
-        //ESPERAR ATÉ QUE O BANCO DE DADOS SEJA LIDO
+        //ESPERAR ATÃ‰ QUE O BANCO DE DADOS SEJA LIDO
         using (UnityWebRequest itemdata = UnityWebRequest.Post("https://zeleystudios.servegame.com/corujao//perguntas.php", form))
         {
             yield return itemdata.SendWebRequest();
@@ -53,7 +54,7 @@ public class BancoDados : MonoBehaviour
 
             yield return new WaitForSeconds(2f); //LAG ENTRE A PERGUNTA E AS RESPOSTAS
             PainelRespostas.SetActive(true);
-            _controleTempo.enabled = true;
+            //_controleTempo.enabled = true;
        
             
             r1.text = itens[3];
@@ -100,9 +101,7 @@ public class BancoDados : MonoBehaviour
                     R4.image.color = Color.green;
                     break;
             }
-        }
-
-   
+        }   
 
     }
 
@@ -110,9 +109,10 @@ public class BancoDados : MonoBehaviour
     {
         //VER QUAL BOTAO FOI CLICADO   
         botaoClicado = EventSystem.current.currentSelectedGameObject.name;
-        respostaCorreta = itens[7]; 
+        respostaCorreta = itens[7];
 
-        switch(botaoClicado){
+        switch (botaoClicado)
+        {
 
             case "R1":
                 resposta = "A";
@@ -121,17 +121,28 @@ public class BancoDados : MonoBehaviour
                 resposta = "B";
                 break;
             case "R3":
-                resposta = "C"; 
+                resposta = "C";
                 break;
             case "R4":
-
+                resposta = "D";
                 break;
         }
         //AVISAR QUE O BOTAO FOI CLICADO
         clickBotao = true;
+
+        if (resposta == respostaCorreta)
+        {
+            Acertou = true;
+
+        }
+        else
+        {
+            Acertou = false;
+        }
 
     }
 
 
 
 }
+

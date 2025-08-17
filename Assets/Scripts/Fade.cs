@@ -14,12 +14,17 @@ public class Fade : MonoBehaviour
     public Text Tempo;
     public AudioSource fxSource;
     public AudioClip fxCronometro;
+    public Slider SliderA, SliderB;
     [HideInInspector]
     public static int numPerguntas;
 
     // Start is called before the first frame update
     void Start()
     {
+
+        SliderA.value = controleTempo.ValorSliderA;
+        SliderB.value = controleTempo.ValorSliderA;
+
         //ACIONAR BARRA DE TEMPO
         currentTime = 5;
         BarraCompleta = false;
