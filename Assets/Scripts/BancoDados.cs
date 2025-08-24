@@ -15,14 +15,14 @@ public class BancoDados : MonoBehaviour
     private string[] itens;     //ARMAZENAR OS ITENS
     public TextMeshProUGUI r1, r2, r3, r4, pergunta;
     public Button R1, R2, R3, R4;
-    private controleTempo _controleTempo;    
+    private controleTempo _controleTempo;
     private string botaoClicado, resposta, respostaCorreta;
     private string materia;
 
     [HideInInspector]
-    public bool clickBotao;
-    public GameObject PainelRespostas;    
-    public bool Acertou = false;    
+    public bool clickBotao, HabilitaRespostas;
+    public GameObject PainelRespostas;
+    public bool Acertou = false;
 
 
 
@@ -42,7 +42,9 @@ public class BancoDados : MonoBehaviour
         form.AddField("materia", materia);
 
         //ESPERAR ATÃ‰ QUE O BANCO DE DADOS SEJA LIDO
-        using (UnityWebRequest itemdata = UnityWebRequest.Post("https://zeleystudios.servegame.com/corujao//perguntas.php", form))
+         using (UnityWebRequest itemdata = UnityWebRequest.Post("https://zeleystudios.servegame.com/corujao//perguntas.php", form))            
+        //using (UnityWebRequest itemdata = UnityWebRequest.Post("http://localhost/corujao//perguntas.php", form))
+
         {
             yield return itemdata.SendWebRequest();
             string itemDataString = itemdata.downloadHandler.text;
@@ -54,9 +56,9 @@ public class BancoDados : MonoBehaviour
 
             yield return new WaitForSeconds(2f); //LAG ENTRE A PERGUNTA E AS RESPOSTAS
             PainelRespostas.SetActive(true);
+            HabilitaRespostas = true;
             //_controleTempo.enabled = true;
-       
-            
+
             r1.text = itens[3];
             r2.text = itens[4];
             r3.text = itens[5];
@@ -70,9 +72,8 @@ public class BancoDados : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
         verificaResposta();
-           
-       
     }
 
 
@@ -81,10 +82,11 @@ public class BancoDados : MonoBehaviour
 
         if (_controleTempo.tempoEsgotado == true || clickBotao == true)
         {
-            if (itens[7] == "A") { R1.image.color = Color.green; }
-            if (itens[7] == "B") { R2.image.color = Color.green; }
-            if (itens[7] == "C") { R3.image.color = Color.green; }
-            if (itens[7] == "D") { R4.image.color = Color.green; }
+
+            R1.interactable = false;
+            R2.interactable = false;
+            R3.interactable = false;
+            R4.interactable = false;
 
             switch (itens[7])
             {
@@ -101,7 +103,8 @@ public class BancoDados : MonoBehaviour
                     R4.image.color = Color.green;
                     break;
             }
-        }   
+
+        }
 
     }
 
@@ -113,18 +116,21 @@ public class BancoDados : MonoBehaviour
 
         switch (botaoClicado)
         {
-
             case "R1":
                 resposta = "A";
+                R1.image.color = new Color(0.49f,0.84f,0.91f,1f);
                 break;
             case "R2":
                 resposta = "B";
+                R2.image.color = new Color(0.49f,0.84f,0.91f,1f);
                 break;
             case "R3":
                 resposta = "C";
+                R3.image.color =new Color(0.49f,0.84f,0.91f,1f);
                 break;
             case "R4":
                 resposta = "D";
+                R4.image.color = new Color(0.49f,0.84f,0.91f,1f);
                 break;
         }
         //AVISAR QUE O BOTAO FOI CLICADO
@@ -141,6 +147,7 @@ public class BancoDados : MonoBehaviour
         }
 
     }
+
 
 
 

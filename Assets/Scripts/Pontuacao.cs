@@ -11,19 +11,23 @@ public class Pontuacao : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
     }
+
 
     // Update is called once per frame
     void Update()
     {
 
-        pontosA.text =  controleTempo.ValorSliderA + " Pontos";
-        pontosB.text =  controleTempo.ValorSliderA +  " Pontos";
+        pontosA.text = controleTempo.ValorSliderA + " Pontos";
+        pontosB.text = controleTempo.ValorSliderA + " Pontos";
 
 
     }
 
-    public void CenaTema(){
+    public void CenaTema()
+    {
         SceneManager.LoadScene(1);
+
     }
 }

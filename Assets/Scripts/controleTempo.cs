@@ -15,7 +15,7 @@ public class controleTempo : MonoBehaviour
     public TextMeshProUGUI Tempo;
     public static int ValorSliderA;
 
-    private static int valorSlider1, valorSlider2, valorSlider3, valorSlider4, valorSlider5;
+    public static int valorSlider1, valorSlider2, valorSlider3, valorSlider4, valorSlider5;
     private bool valorSliderCapturado = false;
 
     [HideInInspector]
@@ -37,7 +37,12 @@ public class controleTempo : MonoBehaviour
     void Update()
     {
 
-        BarraLoad(); //MEDIDOR DE TEMPO
+        //PARA HABILITAR O TEMPO SOMENTE APOS AS RESPOSTAS APARECEREM
+        if (_bancoDados.HabilitaRespostas == true)
+        {
+             BarraLoad(); //MEDIDOR DE TEMPO
+        }
+       
 
         if (BarraProgresso.value == 0 || _bancoDados.clickBotao == true)
         {
@@ -73,6 +78,7 @@ public class controleTempo : MonoBehaviour
             }
 
             tempoEsgotado = true;
+            _bancoDados.HabilitaRespostas = false; 
             SliderA.value = valorSlider1 + valorSlider2 + valorSlider3 + valorSlider4 + valorSlider5;
             SliderB.value = SliderA.value; // SUBSTITUIR QUANDO TIVER MULTIPLAYER
             ValorSliderA = (int)SliderA.value; //PARA PASSAR O VALOR DO SLIDER A PONTUACAO E CENA FADE
