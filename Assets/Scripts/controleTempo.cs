@@ -14,6 +14,8 @@ public class controleTempo : MonoBehaviour
     public Slider BarraProgresso, SliderA, SliderB;
     public TextMeshProUGUI Tempo;
     public static int ValorSliderA;
+    [HideInInspector]
+    public static int numPerguntas;
 
     public static int valorSlider1, valorSlider2, valorSlider3, valorSlider4, valorSlider5;
     private bool valorSliderCapturado = false;
@@ -28,7 +30,7 @@ public class controleTempo : MonoBehaviour
         _bancoDados = FindFirstObjectByType(typeof(BancoDados)) as BancoDados;
 
         //ACIONAR BARRA DE TEMPO
-        currentTime = 10;
+        currentTime = 10.5f;
         SliderA.value = valorSlider1 + valorSlider2 + valorSlider3 + valorSlider4 + valorSlider5;
         SliderB.value = valorSlider1 + valorSlider2 + valorSlider3 + valorSlider4 + valorSlider5; // SUBSTITUIR NO MULTIPLAYER       
     }
@@ -40,9 +42,9 @@ public class controleTempo : MonoBehaviour
         //PARA HABILITAR O TEMPO SOMENTE APOS AS RESPOSTAS APARECEREM
         if (_bancoDados.HabilitaRespostas == true)
         {
-             BarraLoad(); //MEDIDOR DE TEMPO
+            BarraLoad(); //MEDIDOR DE TEMPO
         }
-       
+
 
         if (BarraProgresso.value == 0 || _bancoDados.clickBotao == true)
         {
@@ -78,7 +80,7 @@ public class controleTempo : MonoBehaviour
             }
 
             tempoEsgotado = true;
-            _bancoDados.HabilitaRespostas = false; 
+            _bancoDados.HabilitaRespostas = false;
             SliderA.value = valorSlider1 + valorSlider2 + valorSlider3 + valorSlider4 + valorSlider5;
             SliderB.value = SliderA.value; // SUBSTITUIR QUANDO TIVER MULTIPLAYER
             ValorSliderA = (int)SliderA.value; //PARA PASSAR O VALOR DO SLIDER A PONTUACAO E CENA FADE
@@ -99,7 +101,18 @@ public class controleTempo : MonoBehaviour
     IEnumerator ChamarFade()
     {
         yield return new WaitForSeconds(2f);
-        SceneManager.LoadScene(3);
+
+        if (numPerguntas == 5)
+        {
+           
+            SceneManager.LoadScene(6);
+             numPerguntas = 0;
+        }   
+        else
+        {
+            SceneManager.LoadScene(3);
+        }
+
 
     }
 
