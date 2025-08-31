@@ -34,6 +34,7 @@ public class ControleTemas : MonoBehaviour
         if (botaoClicado == "BtQuimica") { materia = "quimica"; SceneManager.LoadScene(5); }
         if (botaoClicado == "BtGeografia") { materia = "geografia"; SceneManager.LoadScene(4); }
         if (botaoClicado == "BtBiologia") { materia = "biologia"; SceneManager.LoadScene(4); }
+        if (botaoClicado == "BtMedicina") { materia = "medicina"; SceneManager.LoadScene(4); }
 
     }
 
