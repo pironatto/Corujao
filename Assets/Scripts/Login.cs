@@ -46,7 +46,7 @@ public class Login : MonoBehaviour
         form.AddField("id", id);
 
         //PEGAR OS DADOS DO BANCO DE DADOS
-       using (UnityWebRequest cadastroUsuario = UnityWebRequest.Post("https://zeleystudios.servegame.com/corujao//consulta.php", form))
+       using (UnityWebRequest cadastroUsuario = UnityWebRequest.Post("https://zeleystudios.servegame.com/corujao/consulta", form))
         //using (UnityWebRequest cadastroUsuario = UnityWebRequest.Post("http://localhost/corujao//consulta.php", form))
 
         {

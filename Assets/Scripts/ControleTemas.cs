@@ -31,7 +31,7 @@ public class ControleTemas : MonoBehaviour
         if (botaoClicado == "BtCiencias") { materia = "ciencias"; SceneManager.LoadScene(4); }
         if (botaoClicado == "BtMatematica") { materia = "matematica"; SceneManager.LoadScene(4); }
         if (botaoClicado == "BtFisica") { materia = "fisica"; SceneManager.LoadScene(4); }
-        if (botaoClicado == "BtQuimica") { materia = "quimica"; SceneManager.LoadScene(5); }
+        if (botaoClicado == "BtHarryPotter") { materia = "harrypotter"; SceneManager.LoadScene(4); }
         if (botaoClicado == "BtGeografia") { materia = "geografia"; SceneManager.LoadScene(4); }
         if (botaoClicado == "BtBiologia") { materia = "biologia"; SceneManager.LoadScene(4); }
         if (botaoClicado == "BtMedicina") { materia = "medicina"; SceneManager.LoadScene(4); }

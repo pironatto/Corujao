@@ -10,7 +10,7 @@ public class Cadastro : MonoBehaviour
 
 {
 
-    private string urlFormulario = "https://zeleystudios.servegame.com/corujao//inserir.php";
+    private string urlFormulario = "https://zeleystudios.servegame.com/corujao/inserir";
    // private string urlFormulario = "http://localhost/corujao//inserir.php";
     private string id, nome, erro;
     public TMP_InputField InputNome;

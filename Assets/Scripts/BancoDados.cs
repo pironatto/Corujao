@@ -42,7 +42,7 @@ public class BancoDados : MonoBehaviour
         form.AddField("materia", materia);
 
         //ESPERAR ATÃ‰ QUE O BANCO DE DADOS SEJA LIDO
-         using (UnityWebRequest itemdata = UnityWebRequest.Post("https://zeleystudios.servegame.com/corujao//perguntas.php", form))            
+         using (UnityWebRequest itemdata = UnityWebRequest.Post("https://zeleystudios.servegame.com/corujao/perguntas", form))            
         //using (UnityWebRequest itemdata = UnityWebRequest.Post("http://localhost/corujao//perguntas.php", form))
 
         {

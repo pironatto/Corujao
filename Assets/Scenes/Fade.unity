@@ -1307,7 +1307,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.9913693, b: 0.98679245, a: 0.19607843}
+  m_Color: {r: 1, g: 0.9913693, b: 0.98679245, a: 0.003921569}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1362,7 +1362,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0.55
+  m_Volume: 0.36
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -1496,7 +1496,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 11.724007, y: 851.99994}
+  m_AnchoredPosition: {x: 11.724121, y: 852}
   m_SizeDelta: {x: 1421.43, y: 82.640015}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1472251724
@@ -1585,7 +1585,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -7.8600464, y: 851.99994}
+  m_AnchoredPosition: {x: -7.8601074, y: 852}
   m_SizeDelta: {x: 1425.03, y: 96.53003}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1515182991
@@ -1850,7 +1850,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.9913693, b: 0.98679245, a: 0.19607843}
+  m_Color: {r: 1, g: 0.9913693, b: 0.98679245, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
