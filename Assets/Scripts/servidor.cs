@@ -8,12 +8,12 @@ public class servidor : MonoBehaviour
 
     async void Start()
     {
-        websocket = new WebSocket("ws://localhost:8080"); // Replace with your PHP server address and port
+        websocket = new WebSocket("ws://localhost:3000"); // Replace with your PHP server address and port
 
         websocket.OnOpen += () =>
         {
             Debug.Log("Connection open!");
-            websocket.SendText("Hello from Unity!");
+          
         };
 
         websocket.OnMessage += (bytes) =>

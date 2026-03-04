@@ -26,6 +26,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Pontuacao.unity
     guid: b47d11014a2d3aa4bb1cb85a8bac6c76
+  - enabled: 1
+    path: Assets/Scenes/teste.unity
+    guid: bf15c1404bcde4e46bdc94a4d48f2c3d
+  - enabled: 1
+    path: Assets/Scenes/teste1.unity
+    guid: 07184f4bdb9490347aec624b7b5f9525
   m_configObjects:
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: f34787e9192790e4bb2d8fd6235c8fa8, type: 2}
   m_UseUCBPForAssetBundles: 0

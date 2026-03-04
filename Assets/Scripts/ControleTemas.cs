@@ -7,9 +7,17 @@ using UnityEngine.EventSystems;
 
 public class ControleTemas : MonoBehaviour
 {
+  
 
     [HideInInspector]
     public static string materia;
+
+
+    public void Start()
+    {
+      
+    }
+
 
     public void Awake()
     {
@@ -24,17 +32,17 @@ public class ControleTemas : MonoBehaviour
 
     public void ChamarTelaEspera()
     {
-
-
+       
         string botaoClicado = EventSystem.current.currentSelectedGameObject.name;
-        if (botaoClicado == "BtHistoria") { materia = "historia"; SceneManager.LoadScene(4); }
-        if (botaoClicado == "BtCiencias") { materia = "ciencias"; SceneManager.LoadScene(4); }
-        if (botaoClicado == "BtMatematica") { materia = "matematica"; SceneManager.LoadScene(4); }
-        if (botaoClicado == "BtFisica") { materia = "fisica"; SceneManager.LoadScene(4); }
-        if (botaoClicado == "BtHarryPotter") { materia = "harrypotter"; SceneManager.LoadScene(4); }
-        if (botaoClicado == "BtGeografia") { materia = "geografia"; SceneManager.LoadScene(4); }
-        if (botaoClicado == "BtBiologia") { materia = "biologia"; SceneManager.LoadScene(4); }
-        if (botaoClicado == "BtMedicina") { materia = "medicina"; SceneManager.LoadScene(4); }
+        if (botaoClicado == "BtHistoria") { materia = "historia"; }
+        if (botaoClicado == "BtCiencias") { materia = "ciencias"; }
+        if (botaoClicado == "BtMatematica") { materia = "matematica"; }
+        if (botaoClicado == "BtFisica") { materia = "fisica"; }
+        if (botaoClicado == "BtHarryPotter") { materia = "harrypotter"; }
+        if (botaoClicado == "BtGeografia") { materia = "geografia"; }
+        if (botaoClicado == "BtBiologia") { materia = "biologia"; }
+        if (botaoClicado == "BtMedicina") { materia = "medicina"; }
+
 
     }
 
