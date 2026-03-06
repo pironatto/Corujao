@@ -18,7 +18,7 @@ public class ControleTemas : MonoBehaviour
       
     }
 
-
+/*
     public void Awake()
     {
         controleTempo.valorSlider1 = 0;
@@ -29,7 +29,7 @@ public class ControleTemas : MonoBehaviour
         controleTempo.ValorSliderA = 0;
     }
 
-
+*/
     public void ChamarTelaEspera()
     {
        

@@ -1,0 +1,5 @@
+D:/ZeleyStudios/ProjetosUnity/Corujao/.utmp/RelWithDebInfo/384z3p3w/armeabi-v7a/CMakeFiles/edit_cache.dir
+D:/ZeleyStudios/ProjetosUnity/Corujao/.utmp/RelWithDebInfo/384z3p3w/armeabi-v7a/CMakeFiles/rebuild_cache.dir
+D:/ZeleyStudios/ProjetosUnity/Corujao/.utmp/RelWithDebInfo/384z3p3w/armeabi-v7a/FramePacing/CMakeFiles/swappywrapper.dir
+D:/ZeleyStudios/ProjetosUnity/Corujao/.utmp/RelWithDebInfo/384z3p3w/armeabi-v7a/FramePacing/CMakeFiles/edit_cache.dir
+D:/ZeleyStudios/ProjetosUnity/Corujao/.utmp/RelWithDebInfo/384z3p3w/armeabi-v7a/FramePacing/CMakeFiles/rebuild_cache.dir

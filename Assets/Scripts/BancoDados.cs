@@ -18,8 +18,8 @@ public class BancoDados : MonoBehaviour
     private Coroutine rotinaTimeout;
 
     public Slider BarraProgresso;
-    private float tempoRestante;
-    private bool contandoTempo = false;
+    public static float tempoRestante;
+    public bool contandoTempo = false;
 
     void Update()
     {
@@ -62,13 +62,12 @@ public class BancoDados : MonoBehaviour
         HabilitaRespostas = true;
         clickBotao = false;
 
-        // Sempre reinicia com o tempo total da pergunta (ex.: 10 segundos)
         tempoRestante = data.tempoTotal;
         BarraProgresso.maxValue = data.tempoTotal;
         BarraProgresso.value = tempoRestante;
         Tempo.text = Mathf.RoundToInt(tempoRestante).ToString();
 
-        contandoTempo = false; // só começa quando painel de respostas aparece
+        contandoTempo = false;
     }
 
     public void ResetarBotoes()
@@ -78,8 +77,6 @@ public class BancoDados : MonoBehaviour
         R3.interactable = true; R3.image.color = Color.white;
         R4.interactable = true; R4.image.color = Color.white;
     }
-
-
 
     public void IniciarCronometro()
     {
@@ -114,6 +111,10 @@ public class BancoDados : MonoBehaviour
                 case "R3": R3.image.color = Color.green; break;
                 case "R4": R4.image.color = Color.green; break;
             }
+
+            // Soma pontuação
+            Score.pontuacaoTotal += tempoRestante;
+            Score.pontosPorPergunta[Score.numPerguntas] = tempoRestante;
         }
         else
         {
@@ -125,6 +126,7 @@ public class BancoDados : MonoBehaviour
                 case "R4": R4.image.color = Color.red; break;
             }
 
+            Score.pontosPorPergunta[Score.numPerguntas] = 0f;
             StartCoroutine(MostrarCorretaDepoisDeAtraso());
         }
 
@@ -135,6 +137,16 @@ public class BancoDados : MonoBehaviour
 
         contandoTempo = false;
         if (rotinaTimeout != null) StopCoroutine(rotinaTimeout);
+
+        // Incrementa número de perguntas respondidas
+        Score.numPerguntas++;
+
+        // Se já respondeu 5, vai direto para cena final
+        if (Score.numPerguntas >= 5)
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene(6);
+            return;
+        }
     }
 
     private IEnumerator MostrarCorretaDepoisDeAtraso()
@@ -170,7 +182,6 @@ public class BancoDados : MonoBehaviour
         contandoTempo = false;
         Debug.Log("Resposta correta exibida automaticamente!");
 
-        // Aguarda 2 segundos antes de liberar próxima pergunta
         StartCoroutine(AguardarAntesDaProximaPergunta());
     }
 

@@ -21,8 +21,8 @@ public class Fade : MonoBehaviour
     void Start()
     {
 
-        SliderA.value = controleTempo.ValorSliderA;
-        SliderB.value = controleTempo.ValorSliderA;
+        //SliderA.value = controleTempo.ValorSliderA;
+       // SliderB.value = controleTempo.ValorSliderA;
 
         //ACIONAR BARRA DE TEMPO
         currentTime = 5;

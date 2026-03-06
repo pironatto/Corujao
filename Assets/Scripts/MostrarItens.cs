@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using TMPro;
 using NativeWebSocket;
 using System.Text;
@@ -29,11 +30,11 @@ public class MostrarItens : MonoBehaviour
     private float tempoTotalServidor = 10f;
     private long inicioServidor = 0;
 
-    private void Start()
+      private void Start()
     {
         if (textoUI != null)
         {
-            textoUI.text = "Adversário encontrado....";
+            textoUI.text = "Adversário encontrado! Vamos começar...";
         }
 
         if (WebSocketUnity.Instance != null)
@@ -52,6 +53,7 @@ public class MostrarItens : MonoBehaviour
                         itensRecebidos = itensMsg.itens;
                         tempoTotalServidor = itensMsg.tempoTotal;
                         inicioServidor = itensMsg.inicio;
+                        
                         AtualizarUI();
                     }
                 };
@@ -128,6 +130,7 @@ public class MostrarItens : MonoBehaviour
     public void LiberarProximaPergunta()
     {
         Debug.Log("Liberando próxima pergunta...");
+
 
         if (WebSocketUnity.Instance != null)
         {

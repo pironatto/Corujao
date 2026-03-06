@@ -388,6 +388,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WebSocketUnity
   canvasPrincipal: {fileID: 1426238706}
   canvasAguardando: {fileID: 1695333907}
+  materia: {fileID: 420724630}
   materiaEscolhida: 
 --- !u!1 &420724628
 GameObject:
@@ -1883,7 +1884,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.018849751, y: 0.013347445}
   m_AnchorMax: {x: 0.39856222, y: 0.19937174}
-  m_AnchoredPosition: {x: -2.7999954, y: 0.4000244}
+  m_AnchoredPosition: {x: -2.8000069, y: 0.4000244}
   m_SizeDelta: {x: 2.2700043, y: 5.290001}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1330640128

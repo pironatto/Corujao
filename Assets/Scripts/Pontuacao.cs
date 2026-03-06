@@ -1,33 +1,24 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using TMPro;
 using UnityEngine.UI;
 
-public class Pontuacao : MonoBehaviour
+public class ResultadoFinal : MonoBehaviour
 {
-    public Text pontosA, pontosB;
+    public Text textoPontuacao;
+    public Text textoDetalhes;
 
-    // Start is called before the first frame update
     void Start()
     {
+        // Exibe a pontuação acumulada
+        textoPontuacao.text = "Pontuação final: " + Score.pontuacaoTotal.ToString("F0");
 
-    }
+        // Exibe pontuação por pergunta
+        string detalhes = "";
+        for (int i = 0; i < Score.pontosPorPergunta.Length; i++)
+        {
+            detalhes += "Pergunta " + (i + 1) + ": " + Score.pontosPorPergunta[i].ToString("F0") + "\n";
+        }
 
-
-    // Update is called once per frame
-    void Update()
-    {
-
-        pontosA.text = controleTempo.ValorSliderA + " Pontos";
-        pontosB.text = controleTempo.ValorSliderA + " Pontos";
-
-
-    }
-
-    public void CenaTema()
-    {
-        SceneManager.LoadScene(1);
-
+        textoDetalhes.text = detalhes;
     }
 }

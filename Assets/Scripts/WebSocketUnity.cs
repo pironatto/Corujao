@@ -3,6 +3,7 @@ using NativeWebSocket;
 using System.Text;
 using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
+using TMPro;
 
 [System.Serializable]
 public class MensagemStatus
@@ -26,8 +27,11 @@ public class WebSocketUnity : MonoBehaviour
     public GameObject canvasAguardando;
     private WebSocket websocket;
     public static WebSocketUnity Instance { get; private set; }
+    public TMP_Text materia;
 
+    [HideInInspector]
     public string materiaEscolhida;
+   
 
     private void Awake()
     {
@@ -42,7 +46,9 @@ public class WebSocketUnity : MonoBehaviour
 
     private async void Start()
     {
-        websocket = new WebSocket("ws://localhost:3000");
+       //websocket = new WebSocket("ws://zeleystudios.servegame.com:3000");
+      websocket = new WebSocket("ws://localhost:3000");
+
 
         websocket.OnOpen += () =>
         {
@@ -62,10 +68,11 @@ public class WebSocketUnity : MonoBehaviour
                 {
                     if (canvasPrincipal != null) canvasPrincipal.SetActive(false);
                     if (canvasAguardando != null) canvasAguardando.SetActive(true);
+                    materia.text = "Você escolheu "+  materiaEscolhida + ". Aguardando outro jogador...";
                 }
                 else if (statusMsg.mensagem.StartsWith("Par formado"))
                 {
-                    SceneManager.LoadScene("Teste1");
+                    SceneManager.LoadScene("Perguntas");
                 }
             }
             else
