@@ -765,13 +765,13 @@ MonoBehaviour:
       - m_Target: {fileID: 1944760867}
         m_TargetAssemblyTypeName: BancoDados, Assembly-CSharp
         m_MethodName: BotaoResposta
-        m_Mode: 1
+        m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: 
+          m_StringArgument: R2
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!1 &489767126
@@ -2425,13 +2425,13 @@ MonoBehaviour:
       - m_Target: {fileID: 1944760867}
         m_TargetAssemblyTypeName: BancoDados, Assembly-CSharp
         m_MethodName: BotaoResposta
-        m_Mode: 1
+        m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: 
+          m_StringArgument: R3
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!1 &1417404115
@@ -2574,13 +2574,13 @@ MonoBehaviour:
       - m_Target: {fileID: 1944760867}
         m_TargetAssemblyTypeName: BancoDados, Assembly-CSharp
         m_MethodName: BotaoResposta
-        m_Mode: 1
+        m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: 
+          m_StringArgument: R1
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!1 &1421534316
@@ -3629,21 +3629,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a940121e58b30684c8fae2bfe192879b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BancoDados
-  r1: {fileID: 833458609}
-  r2: {fileID: 407853891}
-  r3: {fileID: 1958428088}
-  r4: {fileID: 1302394985}
-  pergunta: {fileID: 915147338}
-  Tempo: {fileID: 577391186}
   R1: {fileID: 1417404120}
   R2: {fileID: 483803417}
   R3: {fileID: 1382480551}
   R4: {fileID: 2055195742}
-  PainelRespostas: {fileID: 1917799253}
-  clickBotao: 0
-  HabilitaRespostas: 0
-  Acertou: 0
-  BarraProgresso: {fileID: 1761884346}
+  pergunta: {fileID: 915147338}
+  cronometro: {fileID: 577391186}
+  mostrarItens: {fileID: 1944760868}
   contandoTempo: 0
 --- !u!114 &1944760868
 MonoBehaviour:
@@ -3692,8 +3684,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Score
   SliderA: {fileID: 1599347579}
-  SliderB: {fileID: 1611700460}
-  ValorFinal: 0
+  textoPontuacaoTotal: {fileID: 0}
+  textoDetalhes: {fileID: 0}
 --- !u!1 &1958428085
 GameObject:
   m_ObjectHideFlags: 0
@@ -4007,13 +3999,13 @@ MonoBehaviour:
       - m_Target: {fileID: 1944760867}
         m_TargetAssemblyTypeName: BancoDados, Assembly-CSharp
         m_MethodName: BotaoResposta
-        m_Mode: 1
+        m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: 
+          m_StringArgument: R4
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!1 &2071317137

@@ -1,55 +1,70 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using UnityEngine.SceneManagement;
 
 public class Score : MonoBehaviour
 {
-
     private BancoDados _bancoDados;
-    private MostrarItens _mostrarItens;
     private float currentTime;
-    public Slider SliderA, SliderB;
 
-  
+    public Slider SliderA;
 
-    [HideInInspector]
-    public static int numPerguntas;
     [HideInInspector]
     public static float pontuacaoTotal = 0f;
+
     [HideInInspector]
     public static float[] pontosPorPergunta = new float[5];
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    // Campos para a cena de score
+    public TextMeshProUGUI textoPontuacaoTotal;
+    public TextMeshProUGUI textoDetalhes;
+
     void Start()
     {
         _bancoDados = FindFirstObjectByType(typeof(BancoDados)) as BancoDados;
-        _mostrarItens = FindFirstObjectByType(typeof(MostrarItens)) as MostrarItens;
 
         currentTime = 0;
-        SliderA.maxValue = 50;
+        if (SliderA != null)
+            SliderA.maxValue = 50;
 
-        pontuacaoTotal = 0f;
-        numPerguntas = 0;
-              
+        // 🚀 Se estamos na cena de score, mostrar resultados
+        if (SceneManager.GetActiveScene().buildIndex == 6) // cena de score
+        {
+            MostrarResultados();
+        }
     }
 
-    // Update is called once per frame
     void Update()
     {
-        if (_bancoDados.contandoTempo == true)
+        if (_bancoDados != null && _bancoDados.contandoTempo)
         {
-          
             currentTime += Time.deltaTime;
-            SliderA.value = currentTime;
-         
+            if (SliderA != null)
+                SliderA.value = currentTime;
         }
-
         else
         {
-            SliderA.value = currentTime;
+            if (SliderA != null)
+                SliderA.value = currentTime;
+        }
+    }
 
+    private void MostrarResultados()
+    {
+        if (textoPontuacaoTotal != null)
+        {
+            textoPontuacaoTotal.text = "Pontuação Total: " + pontuacaoTotal.ToString("F1");
         }
 
-
+        if (textoDetalhes != null)
+        {
+            string detalhes = "";
+            for (int i = 0; i < pontosPorPergunta.Length; i++)
+            {
+                detalhes += $"Pergunta {i + 1}: {pontosPorPergunta[i]:F1}\n";
+            }
+            textoDetalhes.text = detalhes;
+        }
     }
 }

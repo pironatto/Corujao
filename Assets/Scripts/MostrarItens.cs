@@ -57,7 +57,25 @@ public class MostrarItens : MonoBehaviour
                         AtualizarUI();
                     }
                 };
+                // 🚀 Solicita a primeira pergunta com delay de 5 segundos
+                StartCoroutine(PedirPrimeiraPerguntaComDelay(ws));
             }
+        }
+    }
+
+    private IEnumerator PedirPrimeiraPerguntaComDelay(WebSocket ws)
+    {
+        yield return new WaitForSeconds(5f);
+
+        if (ws.State == WebSocketState.Open)
+        {
+            string msg = "{\"tipo\":\"novaPergunta\"}";
+            ws.SendText(msg);
+            Debug.Log("Primeira pergunta solicitada ao servidor (após 5s): " + msg);
+        }
+        else
+        {
+            Debug.LogWarning("WebSocket não está aberto. Não foi possível pedir a primeira pergunta.");
         }
     }
 
@@ -107,7 +125,7 @@ public class MostrarItens : MonoBehaviour
     }
     private IEnumerator MostrarRespostasDepoisDeAtraso()
     {
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(2f);
 
         // Resetar botões antes de mostrar painel
         if (bancoDados != null)

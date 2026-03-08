@@ -28,7 +28,7 @@ public class Fade : MonoBehaviour
         currentTime = 5;
         BarraCompleta = false;
         InvokeRepeating("AudioCronometro", 0.5f, 1f);
-        print(controleTempo.numPerguntas++); // PARA VERIFICAR QUANTAS PERGUNTAS FORAM FEITAS
+        //print(controleTempo.numPerguntas++); // PARA VERIFICAR QUANTAS PERGUNTAS FORAM FEITAS
 
     }
 

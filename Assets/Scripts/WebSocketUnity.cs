@@ -4,6 +4,7 @@ using System.Text;
 using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
 using TMPro;
+using System.Collections;
 
 [System.Serializable]
 public class MensagemStatus
@@ -31,7 +32,6 @@ public class WebSocketUnity : MonoBehaviour
 
     [HideInInspector]
     public string materiaEscolhida;
-   
 
     private void Awake()
     {
@@ -46,9 +46,8 @@ public class WebSocketUnity : MonoBehaviour
 
     private async void Start()
     {
-       //websocket = new WebSocket("ws://zeleystudios.servegame.com:3000");
-      websocket = new WebSocket("ws://localhost:3000");
-
+        // Ajuste conforme necessário (localhost ou servidor remoto)
+        websocket = new WebSocket("ws://localhost:3000");
 
         websocket.OnOpen += () =>
         {
@@ -68,7 +67,7 @@ public class WebSocketUnity : MonoBehaviour
                 {
                     if (canvasPrincipal != null) canvasPrincipal.SetActive(false);
                     if (canvasAguardando != null) canvasAguardando.SetActive(true);
-                    materia.text = "Você escolheu "+  materiaEscolhida + ". Aguardando outro jogador...";
+                    materia.text = "Você escolheu " + materiaEscolhida + ". Aguardando outro jogador...";
                 }
                 else if (statusMsg.mensagem.StartsWith("Par formado"))
                 {
@@ -77,21 +76,36 @@ public class WebSocketUnity : MonoBehaviour
             }
             else
             {
-                // Se não for status, tenta interpretar como pergunta
+                // Se não for status, tenta interpretar como pergunta ou fim
                 PerguntaData perguntaData = JsonUtility.FromJson<PerguntaData>(message);
                 if (perguntaData != null && perguntaData.tipo == "itens")
                 {
-                    // Busca o script BancoDados na cena atual
                     BancoDados banco = FindFirstObjectByType<BancoDados>();
                     if (banco != null)
                     {
                         banco.OnNovaPergunta(perguntaData);
                     }
                 }
+                else
+                {
+                    // 🚀 Novo: interpretar mensagem de fim
+                    if (message.Contains("\"tipo\":\"fim\""))
+                    {
+                        Debug.Log("Fim das perguntas recebido do servidor!");
+                        Instance.StartCoroutine(AguardarFim());
+                    }
+                }
             }
         };
 
         await websocket.Connect();
+    }
+
+    // Corrotina para delay antes da cena final
+    private IEnumerator AguardarFim()
+    {
+        yield return new WaitForSeconds(2f);
+        SceneManager.LoadScene(6); // cena de score
     }
 
     public async void EnviarMateria(string materia)
@@ -105,7 +119,6 @@ public class WebSocketUnity : MonoBehaviour
         }
     }
 
-    // Exemplo: chamado por um botão de UI
     public void OnMateriaSelecionada(string materia)
     {
         string botaoClicado = EventSystem.current.currentSelectedGameObject.name;
