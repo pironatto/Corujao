@@ -17,8 +17,8 @@ public class Score : MonoBehaviour
     public static float[] pontosPorPergunta = new float[5];
 
     // Campos para a cena de score
-    public TextMeshProUGUI textoPontuacaoTotal;
-    public TextMeshProUGUI textoDetalhes;
+    public Text textoPontuacaoTotal;
+    public Text textoDetalhes;
 
     void Start()
     {
@@ -48,6 +48,7 @@ public class Score : MonoBehaviour
             if (SliderA != null)
                 SliderA.value = currentTime;
         }
+
     }
 
     private void MostrarResultados()
@@ -62,9 +63,17 @@ public class Score : MonoBehaviour
             string detalhes = "";
             for (int i = 0; i < pontosPorPergunta.Length; i++)
             {
-                detalhes += $"Pergunta {i + 1}: {pontosPorPergunta[i]:F1}\n";
+                detalhes += $"Pergunta {i + 1} : {pontosPorPergunta[i]:F1}\n";
             }
             textoDetalhes.text = detalhes;
         }
     }
+
+
+    public void EscolherTema()
+    {
+        SceneManager.LoadScene(1);
+    }
+
+
 }

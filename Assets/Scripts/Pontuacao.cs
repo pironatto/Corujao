@@ -2,7 +2,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 
-public class ResultadoFinal : MonoBehaviour
+public class Pontuacao : MonoBehaviour
 {
     public Text textoPontuacao;
     public Text textoDetalhes;

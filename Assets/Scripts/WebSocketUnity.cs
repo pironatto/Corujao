@@ -46,7 +46,7 @@ public class WebSocketUnity : MonoBehaviour
 
     private async void Start()
     {
-        // Ajuste conforme necessário (localhost ou servidor remoto)
+        //websocket = new WebSocket("ws://zeleystudios.servegame.com:3000");
         websocket = new WebSocket("ws://localhost:3000");
 
         websocket.OnOpen += () =>
@@ -59,7 +59,6 @@ public class WebSocketUnity : MonoBehaviour
             string message = Encoding.UTF8.GetString(bytes);
             Debug.Log("Mensagem recebida: " + message);
 
-            // Primeiro tenta interpretar como status
             MensagemStatus statusMsg = JsonUtility.FromJson<MensagemStatus>(message);
             if (statusMsg != null && statusMsg.tipo == "status")
             {
@@ -73,10 +72,25 @@ public class WebSocketUnity : MonoBehaviour
                 {
                     SceneManager.LoadScene("Perguntas");
                 }
+                else if (statusMsg.mensagem.StartsWith("Nenhum adversário encontrado"))
+                {
+                    Debug.Log("Partida individual detectada!");
+
+                    if (canvasAguardando != null)
+                    {
+                        TMP_Text aviso = canvasAguardando.GetComponentInChildren<TMP_Text>();
+                        if (aviso != null)
+                        {
+                            aviso.text = "Nenhum adversário encontrado.\nPartida individual iniciada!";
+                            Instance.StartCoroutine(FadeMensagem(aviso));
+                        }
+                    }
+
+                    Instance.StartCoroutine(IniciarPartidaSingle());
+                }
             }
             else
             {
-                // Se não for status, tenta interpretar como pergunta ou fim
                 PerguntaData perguntaData = JsonUtility.FromJson<PerguntaData>(message);
                 if (perguntaData != null && perguntaData.tipo == "itens")
                 {
@@ -88,7 +102,6 @@ public class WebSocketUnity : MonoBehaviour
                 }
                 else
                 {
-                    // 🚀 Novo: interpretar mensagem de fim
                     if (message.Contains("\"tipo\":\"fim\""))
                     {
                         Debug.Log("Fim das perguntas recebido do servidor!");
@@ -101,11 +114,38 @@ public class WebSocketUnity : MonoBehaviour
         await websocket.Connect();
     }
 
-    // Corrotina para delay antes da cena final
     private IEnumerator AguardarFim()
     {
         yield return new WaitForSeconds(2f);
         SceneManager.LoadScene(6); // cena de score
+    }
+
+    private IEnumerator IniciarPartidaSingle()
+    {
+        yield return new WaitForSeconds(3f);
+        SceneManager.LoadScene("Perguntas");
+    }
+
+    private IEnumerator FadeMensagem(TMP_Text texto)
+    {
+        // Fade-in
+        for (float t = 0; t < 1f; t += Time.deltaTime)
+        {
+            texto.alpha = t;
+            yield return null;
+        }
+        texto.alpha = 1f;
+
+        // Mantém visível por 2 segundos
+        yield return new WaitForSeconds(2f);
+
+        // Fade-out
+        for (float t = 1f; t > 0f; t -= Time.deltaTime)
+        {
+            texto.alpha = t;
+            yield return null;
+        }
+        texto.alpha = 0f;
     }
 
     public async void EnviarMateria(string materia)

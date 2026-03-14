@@ -65,7 +65,7 @@ public class MostrarItens : MonoBehaviour
 
     private IEnumerator PedirPrimeiraPerguntaComDelay(WebSocket ws)
     {
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(2f);
 
         if (ws.State == WebSocketState.Open)
         {

@@ -28,6 +28,9 @@ public class BancoDados : MonoBehaviour
         tempoRestante = tempoTotal;
 
         ResetarBotoes();
+
+        // 🚀 Ativa o cronômetro assim que a pergunta é liberada
+        IniciarCronometro();
     }
 
     public void ResetarBotoes()
@@ -42,6 +45,7 @@ public class BancoDados : MonoBehaviour
     {
         contandoTempo = true;
         tempoRestante = tempoTotal;
+    
     }
 
     private void Update()
