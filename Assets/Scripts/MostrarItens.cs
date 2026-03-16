@@ -4,17 +4,6 @@ using TMPro;
 using NativeWebSocket;
 using System.Text;
 using System.Collections;
-using System;
-
-[System.Serializable]
-public class MensagemItens
-{
-    public string tipo;
-    public string[] itens;
-    public float tempoTotal; // em segundos
-    public long inicio;      // timestamp em ms
-}
-
 
 public class MostrarItens : MonoBehaviour
 {
@@ -24,22 +13,19 @@ public class MostrarItens : MonoBehaviour
     public GameObject canvasAguardando;
     public TextMeshProUGUI pergunta;
     public GameObject opcoesResposta;
-
     public BancoDados bancoDados; // arraste no Inspector
 
     private float tempoTotalServidor = 10f;
     private long inicioServidor = 0;
 
-      private void Start()
+    private void Start()
     {
         if (textoUI != null)
-        {
             textoUI.text = "Adversário encontrado! Vamos começar...";
-        }
 
         if (WebSocketUnity.Instance != null)
         {
-            WebSocket ws = GetWebSocket();
+            WebSocket ws = WebSocketUnity.Instance.Websocket; // 🔹 acesso direto sem reflexão
             if (ws != null)
             {
                 ws.OnMessage += (bytes) =>
@@ -47,17 +33,20 @@ public class MostrarItens : MonoBehaviour
                     string message = Encoding.UTF8.GetString(bytes);
                     Debug.Log("Mensagem recebida na CenaItens: " + message);
 
-                    MensagemItens itensMsg = JsonUtility.FromJson<MensagemItens>(message);
+                    PerguntaData itensMsg = JsonUtility.FromJson<PerguntaData>(message);
                     if (itensMsg != null && itensMsg.tipo == "itens" && itensMsg.itens != null)
                     {
-                        itensRecebidos = itensMsg.itens;
-                        tempoTotalServidor = itensMsg.tempoTotal;
-                        inicioServidor = itensMsg.inicio;
-                        
-                        AtualizarUI();
+                        if (itensMsg.partidaId == WebSocketUnity.Instance.partidaId)
+                        {
+                            itensRecebidos = itensMsg.itens;
+                            tempoTotalServidor = itensMsg.tempoTotal;
+                            inicioServidor = itensMsg.inicio;
+                            AtualizarUI();
+                        }
                     }
                 };
-                // 🚀 Solicita a primeira pergunta com delay de 5 segundos
+
+                // solicita a primeira pergunta com delay
                 StartCoroutine(PedirPrimeiraPerguntaComDelay(ws));
             }
         }
@@ -66,26 +55,13 @@ public class MostrarItens : MonoBehaviour
     private IEnumerator PedirPrimeiraPerguntaComDelay(WebSocket ws)
     {
         yield return new WaitForSeconds(2f);
-
         if (ws.State == WebSocketState.Open)
         {
-            string msg = "{\"tipo\":\"novaPergunta\"}";
+            string msg = "{\"tipo\":\"novaPergunta\", \"partidaId\":\""
+                         + WebSocketUnity.Instance.partidaId + "\"}";
+            Debug.Log("Enviando novaPergunta com partidaId: " + WebSocketUnity.Instance.partidaId);
             ws.SendText(msg);
-            Debug.Log("Primeira pergunta solicitada ao servidor (após 5s): " + msg);
         }
-        else
-        {
-            Debug.LogWarning("WebSocket não está aberto. Não foi possível pedir a primeira pergunta.");
-        }
-    }
-
-    private WebSocket GetWebSocket()
-    {
-        var wsUnity = typeof(WebSocketUnity)
-            .GetField("websocket", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-            ?.GetValue(WebSocketUnity.Instance) as WebSocket;
-
-        return wsUnity;
     }
 
     private void AtualizarUI()
@@ -94,24 +70,21 @@ public class MostrarItens : MonoBehaviour
         {
             if (itensRecebidos.Length < 8)
             {
-                Debug.LogError("Itens recebidos incompletos! Tamanho: " + itensRecebidos.Length);
+                Debug.LogError("Itens recebidos incompletos!");
                 return;
             }
 
-            if (canvasPrincipal != null) canvasPrincipal.SetActive(false);
-            if (canvasAguardando != null) canvasAguardando.SetActive(true);
+            canvasPrincipal?.SetActive(false);
+            canvasAguardando?.SetActive(true);
 
-            // Mostra a pergunta imediatamente
             pergunta.text = itensRecebidos[2];
+            opcoesResposta?.SetActive(false);
 
-            // Garante que painel de respostas fique oculto
-            if (opcoesResposta != null) opcoesResposta.SetActive(false);
-
-            // Prepara BancoDados com a nova pergunta (cronômetro resetado mas ainda parado)
             if (bancoDados != null)
             {
                 PerguntaData data = new PerguntaData
                 {
+                    partidaId = WebSocketUnity.Instance.partidaId,
                     itens = itensRecebidos,
                     tempoTotal = tempoTotalServidor,
                     inicio = inicioServidor
@@ -119,50 +92,31 @@ public class MostrarItens : MonoBehaviour
                 bancoDados.OnNovaPergunta(data);
             }
 
-            // Só ativa o painel depois de 1 segundo
             StartCoroutine(MostrarRespostasDepoisDeAtraso());
         }
     }
+
     private IEnumerator MostrarRespostasDepoisDeAtraso()
     {
         yield return new WaitForSeconds(2f);
-
-        // Resetar botões antes de mostrar painel
-        if (bancoDados != null)
-        {
-            bancoDados.ResetarBotoes();
-        }
-
-        if (opcoesResposta != null) opcoesResposta.SetActive(true);
-
-        // Agora sim inicia o cronômetro
-        if (bancoDados != null)
-        {
-            bancoDados.IniciarCronometro();
-        }
+        bancoDados?.ResetarBotoes();
+        opcoesResposta?.SetActive(true);
+        bancoDados?.IniciarCronometro();
     }
 
-
-
-    // Método chamado pelo BancoDados após aguardar alguns segundos de feedback
+    // chamado pelo BancoDados após feedback
     public void LiberarProximaPergunta()
     {
         Debug.Log("Liberando próxima pergunta...");
-
-
         if (WebSocketUnity.Instance != null)
         {
-            WebSocket ws = GetWebSocket();
+            WebSocket ws = WebSocketUnity.Instance.Websocket;
             if (ws != null && ws.State == WebSocketState.Open)
             {
-                // Envia mensagem ao servidor pedindo nova pergunta
-                string msg = "{\"tipo\":\"novaPergunta\"}";
+                string msg = "{\"tipo\":\"novaPergunta\", \"partidaId\":\""
+                             + WebSocketUnity.Instance.partidaId + "\"}";
                 ws.SendText(msg);
                 Debug.Log("Mensagem enviada ao servidor: " + msg);
-            }
-            else
-            {
-                Debug.LogWarning("WebSocket não está aberto. Não foi possível pedir nova pergunta.");
             }
         }
     }
@@ -170,10 +124,6 @@ public class MostrarItens : MonoBehaviour
     private void Update()
     {
         if (WebSocketUnity.Instance != null)
-        {
-            typeof(WebSocketUnity)
-                .GetMethod("Update", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                ?.Invoke(WebSocketUnity.Instance, null);
-        }
+            WebSocketUnity.Instance.Websocket.DispatchMessageQueue();
     }
 }

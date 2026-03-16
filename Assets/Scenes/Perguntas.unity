@@ -3684,8 +3684,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Score
   SliderA: {fileID: 1599347579}
+  SliderOponente: {fileID: 1611700460}
   textoPontuacaoTotal: {fileID: 0}
   textoDetalhes: {fileID: 0}
+  textoPontuacaoOponente: {fileID: 0}
 --- !u!1 &1958428085
 GameObject:
   m_ObjectHideFlags: 0

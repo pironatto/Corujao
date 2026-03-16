@@ -15,8 +15,14 @@ public class BancoDados : MonoBehaviour
     private float tempoRestante;
     public bool contandoTempo = false;
 
+    private string partidaIdAtual;
+
     public void OnNovaPergunta(PerguntaData data)
     {
+        if (data.partidaId != WebSocketUnity.Instance.partidaId) return;
+
+        partidaIdAtual = data.partidaId;
+
         pergunta.text = data.itens[2];
         R1.GetComponentInChildren<TextMeshProUGUI>().text = data.itens[3];
         R2.GetComponentInChildren<TextMeshProUGUI>().text = data.itens[4];
@@ -25,11 +31,13 @@ public class BancoDados : MonoBehaviour
 
         respostaCorreta = data.itens[7];
         tempoTotal = data.tempoTotal;
-        tempoRestante = tempoTotal;
+
+        // 🔹 Sincroniza cronômetro com servidor
+        long agora = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        float atraso = (agora - data.inicio) / 1000f;
+        tempoRestante = Mathf.Max(tempoTotal - atraso, 0);
 
         ResetarBotoes();
-
-        // 🚀 Ativa o cronômetro assim que a pergunta é liberada
         IniciarCronometro();
     }
 
@@ -44,8 +52,6 @@ public class BancoDados : MonoBehaviour
     public void IniciarCronometro()
     {
         contandoTempo = true;
-        tempoRestante = tempoTotal;
-    
     }
 
     private void Update()
@@ -58,7 +64,7 @@ public class BancoDados : MonoBehaviour
             if (tempoRestante <= 0)
             {
                 contandoTempo = false;
-                MostrarRespostaCorreta();
+                MostrarRespostaCorreta(false);
             }
         }
     }
@@ -66,8 +72,8 @@ public class BancoDados : MonoBehaviour
     public void BotaoResposta(string botaoClicado)
     {
         contandoTempo = false;
-
         bool acertou = false;
+
         switch (botaoClicado)
         {
             case "R1": acertou = (respostaCorreta == "A"); break;
@@ -78,7 +84,6 @@ public class BancoDados : MonoBehaviour
 
         if (acertou)
         {
-            // pinta verde
             switch (botaoClicado)
             {
                 case "R1": R1.image.color = Color.green; break;
@@ -87,15 +92,15 @@ public class BancoDados : MonoBehaviour
                 case "R4": R4.image.color = Color.green; break;
             }
 
-            // soma pontuação
             Score.pontuacaoTotal += tempoRestante;
             RegistrarPontuacao(tempoRestante);
+
+            FindFirstObjectByType<Score>()?.IncrementarBarra(tempoRestante);
 
             StartCoroutine(AguardarAntesDaProximaPergunta());
         }
         else
         {
-            // pinta vermelho e mostra correta
             switch (botaoClicado)
             {
                 case "R1": R1.image.color = Color.red; break;
@@ -110,10 +115,10 @@ public class BancoDados : MonoBehaviour
     private IEnumerator MostrarCorretaDepoisDeAtraso()
     {
         yield return new WaitForSeconds(1f);
-        MostrarRespostaCorreta();
+        MostrarRespostaCorreta(false);
     }
 
-    private void MostrarRespostaCorreta()
+    private void MostrarRespostaCorreta(bool acertou)
     {
         switch (respostaCorreta)
         {
@@ -128,8 +133,8 @@ public class BancoDados : MonoBehaviour
         R3.interactable = false;
         R4.interactable = false;
 
-        // registra pontuação zero se não respondeu
-        RegistrarPontuacao(0f);
+        if (!acertou)
+            RegistrarPontuacao(0f);
 
         StartCoroutine(AguardarAntesDaProximaPergunta());
     }
@@ -142,7 +147,6 @@ public class BancoDados : MonoBehaviour
 
     private void RegistrarPontuacao(float pontos)
     {
-        // encontra próxima posição livre no array
         for (int i = 0; i < Score.pontosPorPergunta.Length; i++)
         {
             if (Score.pontosPorPergunta[i] == 0f)
@@ -151,5 +155,8 @@ public class BancoDados : MonoBehaviour
                 break;
             }
         }
+
+        // 🔹 Envia pontuação ao servidor
+        WebSocketUnity.Instance.EnviarPontuacao("JogadorLocal", Score.pontuacaoTotal);
     }
 }

@@ -11,15 +11,42 @@ public class MensagemStatus
 {
     public string tipo;
     public string mensagem;
+    public string partidaId;
+}
+
+[System.Serializable]
+public class MensagemParFormado
+{
+    public string tipo;
+    public string partidaId;
+    public string materia;
+}
+
+[System.Serializable]
+public class MensagemSingle
+{
+    public string tipo;
+    public string mensagem;
+    public string partidaId;
 }
 
 [System.Serializable]
 public class PerguntaData
 {
     public string tipo;
+    public string partidaId;
     public string[] itens;
-    public float tempoTotal; // em segundos
-    public long inicio;      // timestamp em ms
+    public float tempoTotal;
+    public long inicio;
+}
+
+[System.Serializable]
+public class MensagemPontuacaoOponente
+{
+    public string tipo;
+    public string partidaId;
+    public string jogadorId;
+    public float pontos;
 }
 
 public class WebSocketUnity : MonoBehaviour
@@ -30,8 +57,11 @@ public class WebSocketUnity : MonoBehaviour
     public static WebSocketUnity Instance { get; private set; }
     public TMP_Text materia;
 
-    [HideInInspector]
-    public string materiaEscolhida;
+    [HideInInspector] public string materiaEscolhida;
+    [HideInInspector] public string partidaId;
+
+    // 🔹 Expor WebSocket publicamente sem reflexão
+    public WebSocket Websocket => websocket;
 
     private void Awake()
     {
@@ -46,8 +76,9 @@ public class WebSocketUnity : MonoBehaviour
 
     private async void Start()
     {
-        //websocket = new WebSocket("ws://zeleystudios.servegame.com:3000");
-        websocket = new WebSocket("ws://localhost:3000");
+        //websocket = new WebSocket("ws://localhost:3000");
+        websocket = new WebSocket("ws://zeleystudios.servegame.com:3000");
+
 
         websocket.OnOpen += () =>
         {
@@ -59,55 +90,79 @@ public class WebSocketUnity : MonoBehaviour
             string message = Encoding.UTF8.GetString(bytes);
             Debug.Log("Mensagem recebida: " + message);
 
+            // 1. Status genérico
             MensagemStatus statusMsg = JsonUtility.FromJson<MensagemStatus>(message);
             if (statusMsg != null && statusMsg.tipo == "status")
             {
                 if (statusMsg.mensagem.StartsWith("Você escolheu"))
                 {
-                    if (canvasPrincipal != null) canvasPrincipal.SetActive(false);
-                    if (canvasAguardando != null) canvasAguardando.SetActive(true);
+                    canvasPrincipal?.SetActive(false);
+                    canvasAguardando?.SetActive(true);
                     materia.text = "Você escolheu " + materiaEscolhida + ". Aguardando outro jogador...";
-                }
-                else if (statusMsg.mensagem.StartsWith("Par formado"))
-                {
-                    SceneManager.LoadScene("Perguntas");
-                }
-                else if (statusMsg.mensagem.StartsWith("Nenhum adversário encontrado"))
-                {
-                    Debug.Log("Partida individual detectada!");
-
-                    if (canvasAguardando != null)
-                    {
-                        TMP_Text aviso = canvasAguardando.GetComponentInChildren<TMP_Text>();
-                        if (aviso != null)
-                        {
-                            aviso.text = "Nenhum adversário encontrado.\nPartida individual iniciada!";
-                            Instance.StartCoroutine(FadeMensagem(aviso));
-                        }
-                    }
-
-                    Instance.StartCoroutine(IniciarPartidaSingle());
+                    return;
                 }
             }
-            else
+
+            // 2. Par formado (multiplayer)
+            MensagemParFormado parMsg = JsonUtility.FromJson<MensagemParFormado>(message);
+            if (parMsg != null && parMsg.tipo == "parFormado")
             {
-                PerguntaData perguntaData = JsonUtility.FromJson<PerguntaData>(message);
-                if (perguntaData != null && perguntaData.tipo == "itens")
+                partidaId = parMsg.partidaId;
+                materiaEscolhida = parMsg.materia;
+                Debug.Log("PartidaId recebido (par): " + partidaId);
+                SceneManager.LoadScene("Perguntas");
+                return;
+            }
+
+            // 3. Partida single
+            MensagemSingle singleMsg = JsonUtility.FromJson<MensagemSingle>(message);
+            if (singleMsg != null && singleMsg.tipo == "status"
+                && singleMsg.mensagem.StartsWith("Nenhum adversário encontrado"))
+            {
+                partidaId = singleMsg.partidaId;
+                Debug.Log("PartidaId recebido (single): " + partidaId);
+
+                TMP_Text aviso = canvasAguardando?.GetComponentInChildren<TMP_Text>();
+                if (aviso != null)
+                {
+                    aviso.text = "Nenhum adversário encontrado.\nPartida individual iniciada!";
+                    Instance.StartCoroutine(FadeMensagem(aviso));
+                }
+                Instance.StartCoroutine(IniciarPartidaSingle());
+                return;
+            }
+
+            // 4. Pergunta
+            PerguntaData perguntaData = JsonUtility.FromJson<PerguntaData>(message);
+            if (perguntaData != null && perguntaData.tipo == "itens")
+            {
+                if (perguntaData.partidaId == partidaId)
                 {
                     BancoDados banco = FindFirstObjectByType<BancoDados>();
-                    if (banco != null)
-                    {
-                        banco.OnNovaPergunta(perguntaData);
-                    }
+                    banco?.OnNovaPergunta(perguntaData);
                 }
-                else
+                return;
+            }
+
+            // 5. Fim
+            if (message.Contains("\"tipo\":\"fim\""))
+            {
+                Debug.Log("Fim das perguntas recebido!");
+                Instance.StartCoroutine(AguardarFim());
+                return;
+            }
+
+            // 6. Pontuação do oponente
+            MensagemPontuacaoOponente pontuacaoMsg = JsonUtility.FromJson<MensagemPontuacaoOponente>(message);
+            if (pontuacaoMsg != null && pontuacaoMsg.tipo == "pontuacaoOponente")
+            {
+                if (pontuacaoMsg.partidaId == partidaId)
                 {
-                    if (message.Contains("\"tipo\":\"fim\""))
-                    {
-                        Debug.Log("Fim das perguntas recebido do servidor!");
-                        Instance.StartCoroutine(AguardarFim());
-                    }
+                    Score.pontuacaoOponente = pontuacaoMsg.pontos;
+                    FindFirstObjectByType<Score>()?.IncrementarBarraOponente(pontuacaoMsg.pontos);
+                    Debug.Log("Pontuação do oponente atualizada: " + Score.pontuacaoOponente);
                 }
+                return;
             }
         };
 
@@ -117,7 +172,7 @@ public class WebSocketUnity : MonoBehaviour
     private IEnumerator AguardarFim()
     {
         yield return new WaitForSeconds(2f);
-        SceneManager.LoadScene(6); // cena de score
+        SceneManager.LoadScene("Pontuacao");
     }
 
     private IEnumerator IniciarPartidaSingle()
@@ -128,18 +183,13 @@ public class WebSocketUnity : MonoBehaviour
 
     private IEnumerator FadeMensagem(TMP_Text texto)
     {
-        // Fade-in
         for (float t = 0; t < 1f; t += Time.deltaTime)
         {
             texto.alpha = t;
             yield return null;
         }
         texto.alpha = 1f;
-
-        // Mantém visível por 2 segundos
         yield return new WaitForSeconds(2f);
-
-        // Fade-out
         for (float t = 1f; t > 0f; t -= Time.deltaTime)
         {
             texto.alpha = t;
@@ -162,15 +212,32 @@ public class WebSocketUnity : MonoBehaviour
     public void OnMateriaSelecionada(string materia)
     {
         string botaoClicado = EventSystem.current.currentSelectedGameObject.name;
-        if (botaoClicado == "BtHistoria") { materiaEscolhida = "historia"; }
-        if (botaoClicado == "BtCiencias") { materiaEscolhida = "ciencias"; }
-        if (botaoClicado == "BtMatematica") { materiaEscolhida = "matematica"; }
-        if (botaoClicado == "BtFisica") { materiaEscolhida = "fisica"; }
-        if (botaoClicado == "BtHarryPotter") { materiaEscolhida = "harrypotter"; }
-        if (botaoClicado == "BtGeografia") { materiaEscolhida = "geografia"; }
-        if (botaoClicado == "BtBiologia") { materiaEscolhida = "biologia"; }
-        if (botaoClicado == "BtMedicina") { materiaEscolhida = "medicina"; }
+        if (botaoClicado == "BtHistoria") materiaEscolhida = "historia";
+        if (botaoClicado == "BtCiencias") materiaEscolhida = "ciencias";
+        if (botaoClicado == "BtMatematica") materiaEscolhida = "matematica";
+        if (botaoClicado == "BtFisica") materiaEscolhida = "fisica";
+        if (botaoClicado == "BtHarryPotter") materiaEscolhida = "harrypotter";
+        if (botaoClicado == "BtGeografia") materiaEscolhida = "geografia";
+        if (botaoClicado == "BtBiologia") materiaEscolhida = "biologia";
+        if (botaoClicado == "BtMedicina") materiaEscolhida = "medicina";
         EnviarMateria(materiaEscolhida);
+    }
+
+    // 🔹 Novo método para enviar pontuação ao servidor
+    public async void EnviarPontuacao(string jogadorId, float pontos)
+    {
+        if (websocket.State == WebSocketState.Open)
+        {
+            string json = JsonUtility.ToJson(new MensagemPontuacaoOponente
+            {
+                tipo = "pontuacao",
+                partidaId = partidaId,
+                jogadorId = jogadorId,
+                pontos = pontos
+            });
+            await websocket.SendText(json);
+            Debug.Log("Pontuação enviada ao servidor: " + json);
+        }
     }
 
     private void Update()
