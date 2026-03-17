@@ -33,12 +33,12 @@ public class BancoDados : MonoBehaviour
         tempoTotal = data.tempoTotal;
 
         // 🔹 Sincroniza cronômetro com servidor
-        long agora = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        float atraso = (agora - data.inicio) / 1000f;
-        tempoRestante = Mathf.Max(tempoTotal - atraso, 0);
+
+        tempoRestante = data.tempoTotal; // 🔹 começa sempre em 10
+
 
         ResetarBotoes();
-        IniciarCronometro();
+ 
     }
 
     public void ResetarBotoes()

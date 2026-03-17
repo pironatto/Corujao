@@ -72,7 +72,26 @@ public class WebSocketUnity : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        // Sempre que uma cena nova carregar, atualiza referências
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // Procura todos os GameObjects, inclusive inativos
+        var allObjects = Resources.FindObjectsOfTypeAll<GameObject>();
+
+        foreach (var obj in allObjects)
+        {
+            if (obj.name == "Canvas Temas")
+                canvasPrincipal = obj;
+            else if (obj.name == "Canvas Aguardando")
+                canvasAguardando = obj;
+            else if (obj.name == "materia")
+                materia = obj.GetComponent<TMP_Text>();
+        }
+    }
+
 
     private async void Start()
     {

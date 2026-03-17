@@ -53,7 +53,7 @@ public class Score : MonoBehaviour
             string detalhes = "";
             for (int i = 0; i < pontosPorPergunta.Length; i++)
                 detalhes += $"Pergunta {i + 1} : {pontosPorPergunta[i]:F1}\n";
-            textoDetalhes.text = detalhes;
+           // textoDetalhes.text = detalhes;
         }
 
         if (textoPontuacaoOponente != null)

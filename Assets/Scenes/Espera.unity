@@ -748,9 +748,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   giro: -500
   Seta: {fileID: 71800683}
-  Ok: {fileID: 789518818}
-  Red: {fileID: 1715836133}
-  Green: {fileID: 478829571}
 --- !u!1 &1612204008
 GameObject:
   m_ObjectHideFlags: 0
