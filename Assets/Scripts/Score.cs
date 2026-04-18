@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
+using NativeWebSocket; // precisa para acessar o WebSocket
 
 public class Score : MonoBehaviour
 {
@@ -53,15 +54,29 @@ public class Score : MonoBehaviour
             string detalhes = "";
             for (int i = 0; i < pontosPorPergunta.Length; i++)
                 detalhes += $"Pergunta {i + 1} : {pontosPorPergunta[i]:F1}\n";
-           // textoDetalhes.text = detalhes;
+            // textoDetalhes.text = detalhes;
         }
 
         if (textoPontuacaoOponente != null)
             textoPontuacaoOponente.text = "Pontuação do Oponente: " + pontuacaoOponente.ToString("F1");
     }
 
-    public void EscolherTema()
+    public async void EscolherTema()
     {
+        // 🔹 Envia reset para o servidor
+        var ws = WebSocketUnity.Instance.Websocket;
+        if (ws != null && ws.State == WebSocketState.Open)
+        {
+            string json = "{\"tipo\":\"reset\"}";
+            await ws.SendText(json);
+        }
+
+        // 🔹 Volta para a cena de seleção de temas
         SceneManager.LoadScene(1);
+
+        // 🔹 Zera pontuação local também
+        pontuacaoTotal = 0f;
+        pontuacaoOponente = 0f;
+        pontosPorPergunta = new float[5];
     }
 }
