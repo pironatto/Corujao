@@ -96,7 +96,7 @@ public class WebSocketUnity : MonoBehaviour
     private async void Start()
     {
         //websocket = new WebSocket("ws://localhost:3000");
-        websocket = new WebSocket("ws://zeleystudios.servegame.com:3000");
+        websocket = new WebSocket("ws://zeleystudios.online:3000");
 
 
         websocket.OnOpen += () =>

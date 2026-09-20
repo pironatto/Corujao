@@ -9,6 +9,9 @@ EditorBuildSettings:
     path: Assets/Scenes/SampleScene.unity
     guid: 3fc8acdd13e6c734bafef6554d6fdbcd
   - enabled: 1
+    path: Assets/Scenes/Config.unity
+    guid: 24d15ea7f60fa194e9d37fd60acd61a0
+  - enabled: 1
     path: Assets/Scenes/Temas.unity
     guid: 6c665b1993ca62442ac549bd3f8fe0e1
   - enabled: 1
@@ -17,7 +20,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Fade.unity
     guid: 9238e2ec3741d654c843f0a188ae9a98
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Espera.unity
     guid: 19b4b44f5b6d5be4aa3836836ec146d3
   - enabled: 1

@@ -24,4 +24,9 @@ public class ControleScena : MonoBehaviour
     }
 
 
+    public void MudarCena()
+    {
+        SceneManager.LoadScene(2);
+    }
+
 }
