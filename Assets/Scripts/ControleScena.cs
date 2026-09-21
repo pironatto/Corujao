@@ -1,32 +1,21 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class ControleScena : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-
     public void ChamarFade()
     {
-        SceneManager.LoadScene(1);
+        SceneManager.LoadScene("Config");
     }
-
 
     public void MudarCena()
     {
-        SceneManager.LoadScene(2);
+        SceneManager.LoadScene("Temas");
     }
 
+    // Método recomendado para ligar diretamente ao botão
+    public void EscolherTema()
+    {
+        SceneManager.LoadScene("Temas");
+    }
 }

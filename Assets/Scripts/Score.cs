@@ -1,82 +1,149 @@
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
 using UnityEngine.SceneManagement;
-using NativeWebSocket; // precisa para acessar o WebSocket
+using UnityEngine.UI;
+using NativeWebSocket;
 
 public class Score : MonoBehaviour
 {
     public Slider SliderA;
     public Slider SliderOponente;
 
-    [HideInInspector] public static float pontuacaoTotal = 0f;
-    [HideInInspector] public static float[] pontosPorPergunta = new float[5];
-    [HideInInspector] public static float pontuacaoOponente = 0f;
-
     public Text textoPontuacaoTotal;
     public Text textoDetalhes;
     public Text textoPontuacaoOponente;
 
-    void Start()
+    public static float pontuacaoTotal;
+    public static float pontuacaoOponente;
+    public static float[] pontosPorPergunta = new float[5];
+
+    private static int quantidadePerguntasRegistradas;
+
+    private void Start()
     {
-        if (SliderA != null) SliderA.maxValue = 50;
-        if (SliderOponente != null) SliderOponente.maxValue = 50;
+        ConfigurarSliders();
 
         if (SceneManager.GetActiveScene().name == "Pontuacao")
             MostrarResultados();
     }
 
-    void Update()
+    private void ConfigurarSliders()
     {
+        if (SliderA != null)
+        {
+            SliderA.minValue = 0f;
+            SliderA.maxValue = 50f;
+            SliderA.value = pontuacaoTotal;
+        }
+
         if (SliderOponente != null)
+        {
+            SliderOponente.minValue = 0f;
+            SliderOponente.maxValue = 50f;
             SliderOponente.value = pontuacaoOponente;
+        }
+    }
+
+    private void Update()
+    {
+        if (SliderA != null)
+            SliderA.value = Mathf.Clamp(pontuacaoTotal, 0f, SliderA.maxValue);
+
+        if (SliderOponente != null)
+        {
+            SliderOponente.value =
+                Mathf.Clamp(pontuacaoOponente, 0f, SliderOponente.maxValue);
+        }
     }
 
     public void IncrementarBarra(float valor)
     {
-        if (SliderA != null)
-            SliderA.value += valor;
+        if (SliderA == null)
+            return;
+
+        SliderA.value = Mathf.Clamp(
+            SliderA.value + Mathf.Max(0f, valor),
+            SliderA.minValue,
+            SliderA.maxValue
+        );
     }
 
     public void IncrementarBarraOponente(float valor)
     {
+        pontuacaoOponente = Mathf.Max(0f, valor);
+
         if (SliderOponente != null)
-            SliderOponente.value = valor;
+        {
+            SliderOponente.value = Mathf.Clamp(
+                pontuacaoOponente,
+                SliderOponente.minValue,
+                SliderOponente.maxValue
+            );
+        }
+    }
+
+    public static void RegistrarPontuacao(float pontos)
+    {
+        if (quantidadePerguntasRegistradas >= pontosPorPergunta.Length)
+            return;
+
+        pontos = Mathf.Max(0f, pontos);
+
+        pontosPorPergunta[quantidadePerguntasRegistradas] = pontos;
+        quantidadePerguntasRegistradas++;
     }
 
     private void MostrarResultados()
     {
         if (textoPontuacaoTotal != null)
-            textoPontuacaoTotal.text = "Sua Pontuação: " + pontuacaoTotal.ToString("F1");
-
-        if (textoDetalhes != null)
         {
-            string detalhes = "";
-            for (int i = 0; i < pontosPorPergunta.Length; i++)
-                detalhes += $"Pergunta {i + 1} : {pontosPorPergunta[i]:F1}\n";
-            // textoDetalhes.text = detalhes;
+            textoPontuacaoTotal.text =
+                "Sua Pontuação: " + pontuacaoTotal.ToString("F1");
         }
 
         if (textoPontuacaoOponente != null)
-            textoPontuacaoOponente.text = "Pontuação do Oponente: " + pontuacaoOponente.ToString("F1");
+        {
+            textoPontuacaoOponente.text =
+                "Pontuação do Oponente: " +
+                pontuacaoOponente.ToString("F1");
+        }
+
+        if (textoDetalhes != null)
+        {
+            string detalhes = string.Empty;
+
+            for (int i = 0; i < pontosPorPergunta.Length; i++)
+            {
+                detalhes +=
+                    $"Pergunta {i + 1}: " +
+                    $"{pontosPorPergunta[i]:F1}\n";
+            }
+
+            textoDetalhes.text = detalhes;
+        }
+    }
+
+    public static void ResetarPontuacao()
+    {
+        pontuacaoTotal = 0f;
+        pontuacaoOponente = 0f;
+        pontosPorPergunta = new float[5];
+        quantidadePerguntasRegistradas = 0;
     }
 
     public async void EscolherTema()
     {
-        // 🔹 Envia reset para o servidor
-        var ws = WebSocketUnity.Instance.Websocket;
+        WebSocket ws =
+            WebSocketUnity.Instance != null
+                ? WebSocketUnity.Instance.Websocket
+                : null;
+
         if (ws != null && ws.State == WebSocketState.Open)
         {
-            string json = "{\"tipo\":\"reset\"}";
-            await ws.SendText(json);
+            await ws.SendText("{\"tipo\":\"reset\"}");
         }
 
-        // 🔹 Volta para a cena de seleção de temas
-        SceneManager.LoadScene(1);
+        ResetarPontuacao();
 
-        // 🔹 Zera pontuação local também
-        pontuacaoTotal = 0f;
-        pontuacaoOponente = 0f;
-        pontosPorPergunta = new float[5];
+        SceneManager.LoadScene("Temas");
     }
 }

@@ -1,12 +1,13 @@
-using UnityEngine;
-using NativeWebSocket;
-using System.Text;
-using UnityEngine.SceneManagement;
-using UnityEngine.EventSystems;
-using TMPro;
+using System;
 using System.Collections;
+using System.Text;
+using NativeWebSocket;
+using TMPro;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 
-[System.Serializable]
+[Serializable]
 public class MensagemStatus
 {
     public string tipo;
@@ -14,7 +15,13 @@ public class MensagemStatus
     public string partidaId;
 }
 
-[System.Serializable]
+[Serializable]
+public class MensagemMateria
+{
+    public string materia;
+}
+
+[Serializable]
 public class MensagemParFormado
 {
     public string tipo;
@@ -22,7 +29,7 @@ public class MensagemParFormado
     public string materia;
 }
 
-[System.Serializable]
+[Serializable]
 public class MensagemSingle
 {
     public string tipo;
@@ -30,7 +37,7 @@ public class MensagemSingle
     public string partidaId;
 }
 
-[System.Serializable]
+[Serializable]
 public class PerguntaData
 {
     public string tipo;
@@ -40,8 +47,16 @@ public class PerguntaData
     public long inicio;
 }
 
-[System.Serializable]
-public class MensagemPontuacaoOponente
+[Serializable]
+public class MensagemResposta
+{
+    public string tipo;
+    public string partidaId;
+    public string resposta;
+}
+
+[Serializable]
+public class MensagemPontuacao
 {
     public string tipo;
     public string partidaId;
@@ -49,18 +64,27 @@ public class MensagemPontuacaoOponente
     public float pontos;
 }
 
+[Serializable]
+public class MensagemFim
+{
+    public string tipo;
+    public string partidaId;
+    public string motivo;
+}
+
 public class WebSocketUnity : MonoBehaviour
 {
     public GameObject canvasPrincipal;
     public GameObject canvasAguardando;
-    private WebSocket websocket;
-    public static WebSocketUnity Instance { get; private set; }
     public TMP_Text materia;
+
+    private WebSocket websocket;
+
+    public static WebSocketUnity Instance { get; private set; }
 
     [HideInInspector] public string materiaEscolhida;
     [HideInInspector] public string partidaId;
 
-    // 🔹 Expor WebSocket publicamente sem reflexão
     public WebSocket Websocket => websocket;
 
     private void Awake()
@@ -70,15 +94,27 @@ public class WebSocketUnity : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
         Instance = this;
         DontDestroyOnLoad(gameObject);
-        // Sempre que uma cena nova carregar, atualiza referências
         SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+
+        if (Instance == this)
+            Instance = null;
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // Procura todos os GameObjects, inclusive inativos
+        AtualizarReferenciasDaCena();
+    }
+
+    private void AtualizarReferenciasDaCena()
+    {
         var allObjects = Resources.FindObjectsOfTypeAll<GameObject>();
 
         foreach (var obj in allObjects)
@@ -92,100 +128,152 @@ public class WebSocketUnity : MonoBehaviour
         }
     }
 
-
     private async void Start()
     {
-        //websocket = new WebSocket("ws://localhost:3000");
         websocket = new WebSocket("ws://zeleystudios.online:3000");
 
+        websocket.OnOpen += QuandoConectar;
+        websocket.OnError += (erro) => Debug.LogError("Erro no WebSocket: " + erro);
+        websocket.OnClose += (codigo) => Debug.LogWarning("WebSocket fechado. Código: " + codigo);
+        websocket.OnMessage += QuandoReceberMensagem;
 
-        websocket.OnOpen += () =>
+        try
         {
-            Debug.Log("Conectado ao servidor WebSocket!");
-        };
-
-        websocket.OnMessage += (bytes) =>
+            await websocket.Connect();
+        }
+        catch (Exception ex)
         {
-            string message = Encoding.UTF8.GetString(bytes);
-            Debug.Log("Mensagem recebida: " + message);
+            Debug.LogError("Não foi possível conectar ao WebSocket: " + ex.Message);
+        }
+    }
 
-            // 1. Status genérico
-            MensagemStatus statusMsg = JsonUtility.FromJson<MensagemStatus>(message);
-            if (statusMsg != null && statusMsg.tipo == "status")
+    private void QuandoConectar()
+    {
+        Debug.Log("Conectado ao servidor WebSocket!");
+        AtualizarReferenciasDaCena();
+    }
+
+    private void QuandoReceberMensagem(byte[] bytes)
+    {
+        string mensagem = Encoding.UTF8.GetString(bytes);
+        Debug.Log("Mensagem recebida: " + mensagem);
+        ProcessarMensagem(mensagem);
+    }
+
+    private void ProcessarMensagem(string mensagem)
+    {
+        if (string.IsNullOrWhiteSpace(mensagem))
+        {
+            Debug.LogWarning("Mensagem WebSocket vazia.");
+            return;
+        }
+
+        MensagemStatus status = JsonUtility.FromJson<MensagemStatus>(mensagem);
+
+        if (status != null && status.tipo == "status")
+        {
+            if (!string.IsNullOrEmpty(status.mensagem) &&
+                status.mensagem.StartsWith("Você escolheu"))
             {
-                if (statusMsg.mensagem.StartsWith("Você escolheu"))
-                {
-                    canvasPrincipal?.SetActive(false);
-                    canvasAguardando?.SetActive(true);
+                canvasPrincipal?.SetActive(false);
+                canvasAguardando?.SetActive(true);
+
+                if (materia != null)
                     materia.text = "Você escolheu " + materiaEscolhida + ". Aguardando outro jogador...";
-                    return;
-                }
-            }
 
-            // 2. Par formado (multiplayer)
-            MensagemParFormado parMsg = JsonUtility.FromJson<MensagemParFormado>(message);
-            if (parMsg != null && parMsg.tipo == "parFormado")
-            {
-                partidaId = parMsg.partidaId;
-                materiaEscolhida = parMsg.materia;
-                Debug.Log("PartidaId recebido (par): " + partidaId);
-                SceneManager.LoadScene("Perguntas");
                 return;
             }
 
-            // 3. Partida single
-            MensagemSingle singleMsg = JsonUtility.FromJson<MensagemSingle>(message);
-            if (singleMsg != null && singleMsg.tipo == "status"
-                && singleMsg.mensagem.StartsWith("Nenhum adversário encontrado"))
+            if (!string.IsNullOrEmpty(status.mensagem) &&
+                status.mensagem.StartsWith("Nenhum adversário encontrado"))
             {
-                partidaId = singleMsg.partidaId;
-                Debug.Log("PartidaId recebido (single): " + partidaId);
+                if (!string.IsNullOrEmpty(status.partidaId))
+                    partidaId = status.partidaId;
+
+                Debug.Log("Partida single iniciada: " + partidaId);
 
                 TMP_Text aviso = canvasAguardando?.GetComponentInChildren<TMP_Text>();
                 if (aviso != null)
                 {
                     aviso.text = "Nenhum adversário encontrado.\nPartida individual iniciada!";
-                    Instance.StartCoroutine(FadeMensagem(aviso));
+                    StartCoroutine(FadeMensagem(aviso));
                 }
-                Instance.StartCoroutine(IniciarPartidaSingle());
+
+                StartCoroutine(IniciarPartidaSingle());
                 return;
             }
 
-            // 4. Pergunta
-            PerguntaData perguntaData = JsonUtility.FromJson<PerguntaData>(message);
-            if (perguntaData != null && perguntaData.tipo == "itens")
+            if (!string.IsNullOrEmpty(status.mensagem) &&
+                status.mensagem.StartsWith("Sessão reiniciada"))
             {
-                if (perguntaData.partidaId == partidaId)
-                {
-                    BancoDados banco = FindFirstObjectByType<BancoDados>();
-                    banco?.OnNovaPergunta(perguntaData);
-                }
+                partidaId = string.Empty;
+                Debug.Log("Sessão reiniciada pelo servidor.");
                 return;
             }
+        }
 
-            // 5. Fim
-            if (message.Contains("\"tipo\":\"fim\""))
+        MensagemParFormado partida = JsonUtility.FromJson<MensagemParFormado>(mensagem);
+
+        if (partida != null && partida.tipo == "parFormado")
+        {
+            partidaId = partida.partidaId;
+            materiaEscolhida = partida.materia;
+
+            Debug.Log("Partida multiplayer formada: " + partidaId);
+            SceneManager.LoadScene("Perguntas");
+            return;
+        }
+
+        PerguntaData pergunta = JsonUtility.FromJson<PerguntaData>(mensagem);
+
+        if (pergunta != null && pergunta.tipo == "itens")
+        {
+            if (pergunta.partidaId != partidaId)
             {
-                Debug.Log("Fim das perguntas recebido!");
-                Instance.StartCoroutine(AguardarFim());
+                Debug.LogWarning("Pergunta recebida para outra partida. Esperada: " + partidaId + " | Recebida: " + pergunta.partidaId);
                 return;
             }
 
-            // 6. Pontuação do oponente
-            MensagemPontuacaoOponente pontuacaoMsg = JsonUtility.FromJson<MensagemPontuacaoOponente>(message);
-            if (pontuacaoMsg != null && pontuacaoMsg.tipo == "pontuacaoOponente")
+            BancoDados banco = FindFirstObjectByType<BancoDados>();
+            if (banco == null)
             {
-                if (pontuacaoMsg.partidaId == partidaId)
-                {
-                    Score.pontuacaoOponente = pontuacaoMsg.pontos;
-                    FindFirstObjectByType<Score>()?.IncrementarBarraOponente(pontuacaoMsg.pontos);
-                    Debug.Log("Pontuação do oponente atualizada: " + Score.pontuacaoOponente);
-                }
+                Debug.LogError("BancoDados não foi encontrado na cena Perguntas.");
                 return;
             }
-        };
 
-        await websocket.Connect();
+            banco.OnNovaPergunta(pergunta);
+            return;
+        }
+
+        MensagemFim fim = JsonUtility.FromJson<MensagemFim>(mensagem);
+
+        if (fim != null && fim.tipo == "fim")
+        {
+            if (!string.IsNullOrEmpty(fim.partidaId) && fim.partidaId != partidaId)
+                return;
+
+            Debug.Log("Fim das perguntas recebido.");
+            if (!string.IsNullOrEmpty(fim.motivo))
+                Debug.Log("Motivo do encerramento: " + fim.motivo);
+
+            StartCoroutine(AguardarFim());
+            return;
+        }
+
+        MensagemPontuacao pontuacao = JsonUtility.FromJson<MensagemPontuacao>(mensagem);
+
+        if (pontuacao != null && pontuacao.tipo == "pontuacaoOponente")
+        {
+            if (pontuacao.partidaId != partidaId)
+                return;
+
+            Score.pontuacaoOponente = pontuacao.pontos;
+            FindFirstObjectByType<Score>()?.IncrementarBarraOponente(pontuacao.pontos);
+            Debug.Log("Pontuação do oponente atualizada: " + pontuacao.pontos);
+            return;
+        }
+
+        Debug.LogWarning("Mensagem não reconhecida pelo cliente: " + mensagem);
     }
 
     private IEnumerator AguardarFim()
@@ -202,70 +290,163 @@ public class WebSocketUnity : MonoBehaviour
 
     private IEnumerator FadeMensagem(TMP_Text texto)
     {
-        for (float t = 0; t < 1f; t += Time.deltaTime)
+        if (texto == null)
+            yield break;
+
+        texto.alpha = 0f;
+
+        for (float t = 0f; t < 1f; t += Time.deltaTime)
         {
             texto.alpha = t;
             yield return null;
         }
+
         texto.alpha = 1f;
         yield return new WaitForSeconds(2f);
+
         for (float t = 1f; t > 0f; t -= Time.deltaTime)
         {
             texto.alpha = t;
             yield return null;
         }
+
         texto.alpha = 0f;
     }
 
-    public async void EnviarMateria(string materia)
+    public async void EnviarMateria(string materiaSelecionada)
     {
-        if (websocket.State == WebSocketState.Open)
+        if (!WebSocketEstaAberto())
         {
-            string json = "{\"materia\":\"" + materia + "\"}";
+            Debug.LogWarning("WebSocket não está conectado. Matéria não enviada.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(materiaSelecionada))
+        {
+            Debug.LogWarning("Matéria inválida.");
+            return;
+        }
+
+        materiaEscolhida = materiaSelecionada.Trim().ToLower();
+
+        MensagemMateria mensagem = new MensagemMateria
+        {
+            materia = materiaEscolhida
+        };
+
+        string json = JsonUtility.ToJson(mensagem);
+
+        try
+        {
             await websocket.SendText(json);
-            materiaEscolhida = materia;
-            Debug.Log("Matéria enviada: " + materia);
+            Debug.Log("Matéria enviada: " + json);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Erro ao enviar matéria: " + ex.Message);
         }
     }
 
-    public void OnMateriaSelecionada(string materia)
+    public void OnMateriaSelecionada(string materiaSelecionada)
     {
-        string botaoClicado = EventSystem.current.currentSelectedGameObject.name;
-        if (botaoClicado == "BtHistoria") materiaEscolhida = "historia";
-        if (botaoClicado == "BtCiencias") materiaEscolhida = "ciencias";
-        if (botaoClicado == "BtMatematica") materiaEscolhida = "matematica";
-        if (botaoClicado == "BtFisica") materiaEscolhida = "fisica";
-        if (botaoClicado == "BtHarryPotter") materiaEscolhida = "harrypotter";
-        if (botaoClicado == "BtGeografia") materiaEscolhida = "geografia";
-        if (botaoClicado == "BtBiologia") materiaEscolhida = "biologia";
-        if (botaoClicado == "BtMedicina") materiaEscolhida = "medicina";
-        EnviarMateria(materiaEscolhida);
+        string botaoClicado = EventSystem.current != null && EventSystem.current.currentSelectedGameObject != null
+            ? EventSystem.current.currentSelectedGameObject.name
+            : "";
+
+        string materiaDoBotao = botaoClicado switch
+        {
+            "BtHistoria" => "historia",
+            "BtCiencias" => "ciencias",
+            "BtMatematica" => "matematica",
+            "BtFisica" => "fisica",
+            "BtHarryPotter" => "harrypotter",
+            "BtGeografia" => "geografia",
+            "BtBiologia" => "biologia",
+            "BtMedicina" => "medicina",
+            _ => materiaSelecionada
+        };
+
+        EnviarMateria(materiaDoBotao);
     }
 
-    // 🔹 Novo método para enviar pontuação ao servidor
+    public async void EnviarResposta(string resposta)
+    {
+        if (!WebSocketEstaAberto())
+        {
+            Debug.LogWarning("WebSocket não está conectado. Resposta não enviada.");
+            return;
+        }
+
+        MensagemResposta mensagem = new MensagemResposta
+        {
+            tipo = "resposta",
+            partidaId = partidaId,
+            resposta = string.IsNullOrWhiteSpace(resposta) ? string.Empty : resposta.Trim().ToUpper()
+        };
+
+        string json = JsonUtility.ToJson(mensagem);
+        try
+        {
+            await websocket.SendText(json);
+            Debug.Log("Resposta enviada ao servidor: " + json);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Erro ao enviar resposta: " + ex.Message);
+        }
+    }
+
     public async void EnviarPontuacao(string jogadorId, float pontos)
     {
-        if (websocket.State == WebSocketState.Open)
+        if (!WebSocketEstaAberto())
         {
-            string json = JsonUtility.ToJson(new MensagemPontuacaoOponente
-            {
-                tipo = "pontuacao",
-                partidaId = partidaId,
-                jogadorId = jogadorId,
-                pontos = pontos
-            });
+            Debug.LogWarning("WebSocket não está conectado. Pontuação não enviada.");
+            return;
+        }
+
+        MensagemPontuacao mensagem = new MensagemPontuacao
+        {
+            tipo = "pontuacao",
+            partidaId = partidaId,
+            jogadorId = jogadorId,
+            pontos = pontos
+        };
+
+        string json = JsonUtility.ToJson(mensagem);
+
+        try
+        {
             await websocket.SendText(json);
             Debug.Log("Pontuação enviada ao servidor: " + json);
         }
+        catch (Exception ex)
+        {
+            Debug.LogError("Erro ao enviar pontuação: " + ex.Message);
+        }
+    }
+
+    private bool WebSocketEstaAberto()
+    {
+        return websocket != null && websocket.State == WebSocketState.Open;
     }
 
     private void Update()
     {
-        websocket.DispatchMessageQueue();
+        websocket?.DispatchMessageQueue();
     }
 
     private async void OnApplicationQuit()
     {
-        await websocket.Close();
+        if (websocket == null)
+            return;
+
+        try
+        {
+            await websocket.Close();
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning("Erro ao fechar WebSocket: " + ex.Message);
+        }
     }
 }

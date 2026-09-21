@@ -1,7 +1,7 @@
+using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-using System.Collections;
 
 public class BancoDados : MonoBehaviour
 {
@@ -11,105 +11,198 @@ public class BancoDados : MonoBehaviour
     public MostrarItens mostrarItens;
 
     private string respostaCorreta;
-    private float tempoTotal;
     private float tempoRestante;
+    private bool respostaEnviada;
     public bool contandoTempo = false;
-
-    private string partidaIdAtual;
 
     public void OnNovaPergunta(PerguntaData data)
     {
-        if (data.partidaId != WebSocketUnity.Instance.partidaId) return;
+        if (WebSocketUnity.Instance == null)
+        {
+            Debug.LogError("WebSocketUnity.Instance não está disponível.");
+            return;
+        }
 
-        partidaIdAtual = data.partidaId;
+        if (data == null || data.itens == null || data.itens.Length < 8)
+        {
+            Debug.LogError("Pergunta recebida com dados incompletos.");
+            return;
+        }
+
+        if (data.partidaId != WebSocketUnity.Instance.partidaId)
+        {
+            Debug.LogWarning("Pergunta recebida para outra partida.");
+            return;
+        }
+
+        if (pergunta == null || cronometro == null)
+        {
+            Debug.LogError("pergunta ou cronometro não foram configurados no Inspector.");
+            return;
+        }
+
+        if (R1 == null || R2 == null || R3 == null || R4 == null)
+        {
+            Debug.LogError("Botões de resposta não foram configurados no Inspector.");
+            return;
+        }
+
+        contandoTempo = false;
+        respostaEnviada = false;
 
         pergunta.text = data.itens[2];
-        R1.GetComponentInChildren<TextMeshProUGUI>().text = data.itens[3];
-        R2.GetComponentInChildren<TextMeshProUGUI>().text = data.itens[4];
-        R3.GetComponentInChildren<TextMeshProUGUI>().text = data.itens[5];
-        R4.GetComponentInChildren<TextMeshProUGUI>().text = data.itens[6];
 
-        respostaCorreta = data.itens[7];
-        tempoTotal = data.tempoTotal;
+        DefinirTextoBotao(R1, data.itens[3]);
+        DefinirTextoBotao(R2, data.itens[4]);
+        DefinirTextoBotao(R3, data.itens[5]);
+        DefinirTextoBotao(R4, data.itens[6]);
 
-        // 🔹 Sincroniza cronômetro com servidor
-
-        tempoRestante = data.tempoTotal; // 🔹 começa sempre em 10
-
+        respostaCorreta = data.itens[7].Trim().ToUpper();
+        tempoRestante = Mathf.Max(0f, data.tempoTotal);
 
         ResetarBotoes();
- 
+
+        if (mostrarItens != null && mostrarItens.opcoesResposta != null)
+            mostrarItens.opcoesResposta.SetActive(false);
+
+        StartCoroutine(MostrarOpcoesEIniciarCronometro());
+    }
+
+    private void DefinirTextoBotao(Button botao, string texto)
+    {
+        if (botao == null)
+            return;
+
+        TextMeshProUGUI textoBotao = botao.GetComponentInChildren<TextMeshProUGUI>();
+        if (textoBotao != null)
+            textoBotao.text = texto.Trim();
+    }
+
+    private IEnumerator MostrarOpcoesEIniciarCronometro()
+    {
+        yield return new WaitForSeconds(2f);
+
+        if (mostrarItens != null && mostrarItens.opcoesResposta != null)
+            mostrarItens.opcoesResposta.SetActive(true);
+
+        ResetarBotoes();
+        IniciarCronometro();
+
+        Debug.Log("Opções de resposta ativadas.");
     }
 
     public void ResetarBotoes()
     {
-        R1.interactable = true; R1.image.color = Color.white;
-        R2.interactable = true; R2.image.color = Color.white;
-        R3.interactable = true; R3.image.color = Color.white;
-        R4.interactable = true; R4.image.color = Color.white;
+        ConfigurarBotao(R1);
+        ConfigurarBotao(R2);
+        ConfigurarBotao(R3);
+        ConfigurarBotao(R4);
+    }
+
+    private void ConfigurarBotao(Button botao)
+    {
+        if (botao == null)
+            return;
+
+        botao.interactable = true;
+        botao.image.color = Color.white;
     }
 
     public void IniciarCronometro()
     {
+        if (tempoRestante <= 0f)
+        {
+            EnviarRespostaUmaVez("");
+            MostrarRespostaCorreta(false);
+            return;
+        }
+
         contandoTempo = true;
     }
 
     private void Update()
     {
-        if (contandoTempo)
-        {
-            tempoRestante -= Time.deltaTime;
-            cronometro.text = Mathf.CeilToInt(tempoRestante).ToString();
+        if (!contandoTempo)
+            return;
 
-            if (tempoRestante <= 0)
-            {
-                contandoTempo = false;
-                MostrarRespostaCorreta(false);
-            }
+        tempoRestante -= Time.deltaTime;
+
+        if (cronometro != null)
+            cronometro.text = Mathf.Max(0, Mathf.CeilToInt(tempoRestante)).ToString();
+
+        if (tempoRestante <= 0f)
+        {
+            tempoRestante = 0f;
+            contandoTempo = false;
+
+            EnviarRespostaUmaVez("");
+            MostrarRespostaCorreta(false);
         }
     }
 
     public void BotaoResposta(string botaoClicado)
     {
-        contandoTempo = false;
-        bool acertou = false;
+        if (!contandoTempo || respostaEnviada)
+            return;
 
-        switch (botaoClicado)
+        contandoTempo = false;
+
+        string resposta = botaoClicado switch
         {
-            case "R1": acertou = (respostaCorreta == "A"); break;
-            case "R2": acertou = (respostaCorreta == "B"); break;
-            case "R3": acertou = (respostaCorreta == "C"); break;
-            case "R4": acertou = (respostaCorreta == "D"); break;
-        }
+            "R1" => "A",
+            "R2" => "B",
+            "R3" => "C",
+            "R4" => "D",
+            _ => ""
+        };
+
+        if (string.IsNullOrEmpty(resposta))
+            return;
+
+        EnviarRespostaUmaVez(resposta);
+
+        bool acertou = resposta == respostaCorreta;
+
+        Button botaoSelecionado = ObterBotao(botaoClicado);
+
+        if (botaoSelecionado != null)
+            botaoSelecionado.image.color = acertou ? Color.green : Color.red;
 
         if (acertou)
         {
-            switch (botaoClicado)
-            {
-                case "R1": R1.image.color = Color.green; break;
-                case "R2": R2.image.color = Color.green; break;
-                case "R3": R3.image.color = Color.green; break;
-                case "R4": R4.image.color = Color.green; break;
-            }
+            float pontos = Mathf.Max(0f, tempoRestante);
 
-            Score.pontuacaoTotal += tempoRestante;
-            RegistrarPontuacao(tempoRestante);
+            Score.pontuacaoTotal += pontos;
+            RegistrarPontuacao(pontos);
 
-            FindFirstObjectByType<Score>()?.IncrementarBarra(tempoRestante);
-
-            StartCoroutine(AguardarAntesDaProximaPergunta());
+            FindFirstObjectByType<Score>()?.IncrementarBarra(pontos);
+            DesativarBotoes();
         }
         else
         {
-            switch (botaoClicado)
-            {
-                case "R1": R1.image.color = Color.red; break;
-                case "R2": R2.image.color = Color.red; break;
-                case "R3": R3.image.color = Color.red; break;
-                case "R4": R4.image.color = Color.red; break;
-            }
             StartCoroutine(MostrarCorretaDepoisDeAtraso());
         }
+    }
+
+    private void EnviarRespostaUmaVez(string resposta)
+    {
+        if (respostaEnviada)
+            return;
+
+        respostaEnviada = true;
+        WebSocketUnity.Instance?.EnviarResposta(resposta);
+    }
+
+    private Button ObterBotao(string nome)
+    {
+        return nome switch
+        {
+            "R1" => R1,
+            "R2" => R2,
+            "R3" => R3,
+            "R4" => R4,
+            _ => null
+        };
     }
 
     private IEnumerator MostrarCorretaDepoisDeAtraso()
@@ -122,41 +215,41 @@ public class BancoDados : MonoBehaviour
     {
         switch (respostaCorreta)
         {
-            case "A": R1.image.color = Color.green; break;
-            case "B": R2.image.color = Color.green; break;
-            case "C": R3.image.color = Color.green; break;
-            case "D": R4.image.color = Color.green; break;
+            case "A":
+                if (R1 != null) R1.image.color = Color.green;
+                break;
+            case "B":
+                if (R2 != null) R2.image.color = Color.green;
+                break;
+            case "C":
+                if (R3 != null) R3.image.color = Color.green;
+                break;
+            case "D":
+                if (R4 != null) R4.image.color = Color.green;
+                break;
         }
 
-        R1.interactable = false;
-        R2.interactable = false;
-        R3.interactable = false;
-        R4.interactable = false;
+        DesativarBotoes();
 
         if (!acertou)
             RegistrarPontuacao(0f);
-
-        StartCoroutine(AguardarAntesDaProximaPergunta());
     }
 
-    private IEnumerator AguardarAntesDaProximaPergunta()
+    private void DesativarBotoes()
     {
-        yield return new WaitForSeconds(2f);
-        mostrarItens.LiberarProximaPergunta();
+        if (R1 != null) R1.interactable = false;
+        if (R2 != null) R2.interactable = false;
+        if (R3 != null) R3.interactable = false;
+        if (R4 != null) R4.interactable = false;
     }
 
-    private void RegistrarPontuacao(float pontos)
-    {
-        for (int i = 0; i < Score.pontosPorPergunta.Length; i++)
-        {
-            if (Score.pontosPorPergunta[i] == 0f)
-            {
-                Score.pontosPorPergunta[i] = pontos;
-                break;
-            }
-        }
+private void RegistrarPontuacao(float pontos)
+{
+    Score.RegistrarPontuacao(pontos);
 
-        // 🔹 Envia pontuação ao servidor
-        WebSocketUnity.Instance.EnviarPontuacao("JogadorLocal", Score.pontuacaoTotal);
-    }
+    WebSocketUnity.Instance?.EnviarPontuacao(
+        "JogadorLocal",
+        Score.pontuacaoTotal
+    );
+}
 }
