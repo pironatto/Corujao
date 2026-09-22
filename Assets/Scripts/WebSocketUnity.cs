@@ -6,6 +6,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 [Serializable]
 public class MensagemStatus
@@ -73,6 +74,7 @@ public class MensagemFim
     public string tipo;
     public string partidaId;
     public string motivo;
+    public bool partidaIndividual;
     public float pontuacaoJogador;
     public float pontuacaoOponente;
 }
@@ -82,6 +84,9 @@ public class WebSocketUnity : MonoBehaviour
     public GameObject canvasPrincipal;
     public GameObject canvasAguardando;
     public TMP_Text materia;
+
+    private bool escolhaTemaEmAndamento;
+    private bool carregandoCenaPerguntas;
 
     private WebSocket websocket;
 
@@ -124,6 +129,13 @@ public class WebSocketUnity : MonoBehaviour
         LoadSceneMode mode
     )
     {
+        if (scene.name == "Temas")
+        {
+            escolhaTemaEmAndamento = false;
+            carregandoCenaPerguntas = false;
+            partidaId = string.Empty;
+        }
+
         StartCoroutine(
             AtualizarReferenciasDepoisDaCenaCarregar()
         );
@@ -144,7 +156,6 @@ public class WebSocketUnity : MonoBehaviour
 
     private void AtualizarReferenciasDaCena()
     {
-        // Remove referências da cena anterior.
         canvasPrincipal = null;
         canvasAguardando = null;
         materia = null;
@@ -257,6 +268,77 @@ public class WebSocketUnity : MonoBehaviour
             materia.text =
                 "Aguardando outro jogador...";
         }
+    }
+
+    private void BloquearBotoesDeTema()
+    {
+        Scene cenaAtual =
+            SceneManager.GetActiveScene();
+
+        if (!cenaAtual.IsValid() || !cenaAtual.isLoaded)
+        {
+            return;
+        }
+
+        GameObject[] objetosRaiz =
+            cenaAtual.GetRootGameObjects();
+
+        foreach (GameObject objetoRaiz in objetosRaiz)
+        {
+            Button[] botoes =
+                objetoRaiz.GetComponentsInChildren<Button>(
+                    true
+                );
+
+            foreach (Button botao in botoes)
+            {
+                if (botao == null)
+                {
+                    continue;
+                }
+
+                string nome =
+                    botao.gameObject.name;
+
+                if (nome.StartsWith("Bt"))
+                {
+                    botao.interactable = false;
+                }
+            }
+        }
+    }
+
+    private void CarregarCenaPerguntasUmaVez()
+    {
+        if (carregandoCenaPerguntas)
+        {
+            Debug.Log(
+                "A cena Perguntas já está sendo carregada. " +
+                "Solicitação ignorada."
+            );
+
+            return;
+        }
+
+        if (
+            SceneManager.GetActiveScene().name ==
+            "Perguntas"
+        )
+        {
+            Debug.Log(
+                "A cena Perguntas já está ativa."
+            );
+
+            return;
+        }
+
+        carregandoCenaPerguntas = true;
+
+        Debug.Log(
+            "Carregando a cena Perguntas..."
+        );
+
+        SceneManager.LoadScene("Perguntas");
     }
 
     private async void Start()
@@ -451,7 +533,7 @@ public class WebSocketUnity : MonoBehaviour
                 partidaId
             );
 
-            SceneManager.LoadScene("Perguntas");
+            CarregarCenaPerguntasUmaVez();
             return;
         }
 
@@ -576,12 +658,17 @@ public class WebSocketUnity : MonoBehaviour
             Score.pontuacaoOponente =
                 fim.pontuacaoOponente;
 
+            Score.partidaIndividual =
+                fim.partidaIndividual;
+
             Debug.Log(
                 "Resultado final recebido. " +
                 "Jogador: " +
                 Score.pontuacaoTotal +
                 " | Oponente: " +
-                Score.pontuacaoOponente
+                Score.pontuacaoOponente +
+                " | Individual: " +
+                Score.partidaIndividual
             );
 
             StartCoroutine(
@@ -608,7 +695,7 @@ public class WebSocketUnity : MonoBehaviour
     {
         yield return new WaitForSeconds(3f);
 
-        SceneManager.LoadScene("Perguntas");
+        CarregarCenaPerguntasUmaVez();
     }
 
     private IEnumerator FadeMensagem(
@@ -660,6 +747,7 @@ public class WebSocketUnity : MonoBehaviour
                 "Matéria não enviada."
             );
 
+            escolhaTemaEmAndamento = false;
             return;
         }
 
@@ -673,6 +761,7 @@ public class WebSocketUnity : MonoBehaviour
                 "Matéria inválida."
             );
 
+            escolhaTemaEmAndamento = false;
             return;
         }
 
@@ -698,6 +787,8 @@ public class WebSocketUnity : MonoBehaviour
         }
         catch (Exception ex)
         {
+            escolhaTemaEmAndamento = false;
+
             Debug.LogError(
                 "Erro ao enviar matéria: " +
                 ex.Message
@@ -709,6 +800,26 @@ public class WebSocketUnity : MonoBehaviour
         string materiaSelecionada
     )
     {
+        if (escolhaTemaEmAndamento)
+        {
+            Debug.Log(
+                "Escolha de tema já está em andamento. " +
+                "Clique ignorado."
+            );
+
+            return;
+        }
+
+        if (!WebSocketEstaAberto())
+        {
+            Debug.LogWarning(
+                "WebSocket não está conectado. " +
+                "A matéria não será enviada."
+            );
+
+            return;
+        }
+
         string botaoClicado =
             EventSystem.current != null &&
             EventSystem.current.currentSelectedGameObject != null
@@ -727,11 +838,26 @@ public class WebSocketUnity : MonoBehaviour
                 "BtGeografia" => "geografia",
                 "BtBiologia" => "biologia",
                 "BtMedicina" => "medicina",
+                "BtPersonagens" => "personagens",
                 _ => materiaSelecionada
             };
 
-        // Mostra a tela de espera imediatamente,
-        // antes mesmo da resposta do servidor.
+        if (
+            string.IsNullOrWhiteSpace(
+                materiaDoBotao
+            )
+        )
+        {
+            Debug.LogWarning(
+                "Não foi possível identificar a matéria."
+            );
+
+            return;
+        }
+
+        escolhaTemaEmAndamento = true;
+
+        BloquearBotoesDeTema();
         MostrarTelaAguardando();
 
         EnviarMateria(materiaDoBotao);

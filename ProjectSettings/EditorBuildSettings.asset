@@ -23,7 +23,7 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/Espera.unity
     guid: 19b4b44f5b6d5be4aa3836836ec146d3
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Provisoria.unity
     guid: 1d184e9b47471274fbb7d5069e07cf7b
   - enabled: 1
