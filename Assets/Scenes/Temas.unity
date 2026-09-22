@@ -2390,6 +2390,7 @@ MonoBehaviour:
   canvasPrincipal: {fileID: 1069808511}
   canvasAguardando: {fileID: 1106669331}
   materia: {fileID: 1628778521}
+  botaoCancelarBusca: {fileID: 0}
   materiaEscolhida: 
   partidaId: 
 --- !u!4 &1311061076

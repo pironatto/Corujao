@@ -18,27 +18,8 @@ public class Score : MonoBehaviour
     public static float[] pontosPorPergunta = new float[5];
 
     public static bool partidaIndividual;
-    public static bool adversarioDesconectou;
 
     private void Start()
-    {
-        ConfigurarSliders();
-
-        if (
-            SceneManager.GetActiveScene().name ==
-            "Pontuacao"
-        )
-        {
-            MostrarResultados();
-        }
-    }
-
-    private void Update()
-    {
-        AtualizarSliders();
-    }
-
-    private void ConfigurarSliders()
     {
         if (SliderA != null)
         {
@@ -61,9 +42,17 @@ public class Score : MonoBehaviour
                 SliderOponente.maxValue
             );
         }
+
+        if (
+            SceneManager.GetActiveScene().name ==
+            "Pontuacao"
+        )
+        {
+            MostrarResultados();
+        }
     }
 
-    private void AtualizarSliders()
+    private void Update()
     {
         if (SliderA != null)
         {
@@ -128,11 +117,6 @@ public class Score : MonoBehaviour
                 textoPontuacaoOponente.text =
                     "Sem oponente";
             }
-            else if (adversarioDesconectou)
-            {
-                textoPontuacaoOponente.text =
-                    "Oponente desconectado";
-            }
             else
             {
                 textoPontuacaoOponente.text =
@@ -185,17 +169,6 @@ public class Score : MonoBehaviour
             return;
         }
 
-        if (adversarioDesconectou)
-        {
-            textoResultado.text =
-                "OPONENTE DESCONECTADO";
-
-            textoResultado.color =
-                Color.yellow;
-
-            return;
-        }
-
         if (
             Mathf.Approximately(
                 pontuacaoTotal,
@@ -203,15 +176,11 @@ public class Score : MonoBehaviour
             )
         )
         {
-            textoResultado.text =
-                "EMPATE!";
-
-            textoResultado.color =
-                Color.yellow;
+            textoResultado.text = "EMPATE!";
+            textoResultado.color = Color.yellow;
         }
         else if (
-            pontuacaoTotal >
-            pontuacaoOponente
+            pontuacaoTotal > pontuacaoOponente
         )
         {
             textoResultado.text =
@@ -235,9 +204,7 @@ public class Score : MonoBehaviour
         pontuacaoTotal = 0f;
         pontuacaoOponente = 0f;
         pontosPorPergunta = new float[5];
-
         partidaIndividual = false;
-        adversarioDesconectou = false;
     }
 
     public async void EscolherTema()
@@ -258,7 +225,6 @@ public class Score : MonoBehaviour
         }
 
         ResetarPontuacao();
-
         SceneManager.LoadScene("Temas");
     }
 }

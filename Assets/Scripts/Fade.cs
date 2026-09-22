@@ -1,63 +1,116 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 using System;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class Fade : MonoBehaviour
 {
-
     private float currentTime;
-    private bool BarraCompleta;
+    private bool barraCompleta;
+    private bool carregandoPerguntas;
+
+    [Header("Contagem")]
+    public float tempoInicial = 5f;
     public Slider BarraProgresso;
     public Text Tempo;
+
+    [Header("Áudio")]
     public AudioSource fxSource;
     public AudioClip fxCronometro;
-    public Slider SliderA, SliderB;
 
+    [Header("Elementos visuais")]
+    public Slider SliderA;
+    public Slider SliderB;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
+        currentTime = tempoInicial;
+        barraCompleta = false;
+        carregandoPerguntas = false;
 
-        //SliderA.value = controleTempo.ValorSliderA;
-       // SliderB.value = controleTempo.ValorSliderA;
+        if (BarraProgresso != null)
+        {
+            BarraProgresso.minValue = 0f;
+            BarraProgresso.maxValue = tempoInicial;
+            BarraProgresso.value = tempoInicial;
+        }
 
-        //ACIONAR BARRA DE TEMPO
-        currentTime = 5;
-        BarraCompleta = false;
-        InvokeRepeating("AudioCronometro", 0.5f, 1f);
-        //print(controleTempo.numPerguntas++); // PARA VERIFICAR QUANTAS PERGUNTAS FORAM FEITAS
+        if (Tempo != null)
+        {
+            Tempo.text =
+                Mathf.CeilToInt(currentTime).ToString();
+        }
 
+        InvokeRepeating(
+            nameof(AudioCronometro),
+            0.5f,
+            1f
+        );
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
         BarraLoad();
 
-        if (BarraCompleta == false && BarraProgresso.value == 0)
+        if (
+            !barraCompleta &&
+            currentTime <= 0f
+        )
         {
-            SceneManager.LoadScene(2);
+            barraCompleta = true;
+            CancelInvoke(nameof(AudioCronometro));
+            CarregarCenaPerguntas();
         }
-
     }
 
-    public void BarraLoad()
+    private void BarraLoad()
     {
+        if (barraCompleta)
+        {
+            return;
+        }
+
         currentTime -= Time.deltaTime;
-        BarraProgresso.value = currentTime;
-        int contadorTempo = Convert.ToInt32(BarraProgresso.value);
-        Tempo.text = contadorTempo.ToString();
+        currentTime = Mathf.Max(0f, currentTime);
 
+        if (BarraProgresso != null)
+        {
+            BarraProgresso.value = currentTime;
+        }
 
-
+        if (Tempo != null)
+        {
+            Tempo.text =
+                Mathf.CeilToInt(currentTime).ToString();
+        }
     }
 
     private void AudioCronometro()
     {
-        fxSource.PlayOneShot(fxCronometro);
+        if (
+            fxSource != null &&
+            fxCronometro != null &&
+            !barraCompleta
+        )
+        {
+            fxSource.PlayOneShot(fxCronometro);
+        }
     }
-    
+
+    private void CarregarCenaPerguntas()
+    {
+        if (carregandoPerguntas)
+        {
+            return;
+        }
+
+        carregandoPerguntas = true;
+
+        SceneManager.LoadScene("Perguntas");
+    }
+
+    private void OnDestroy()
+    {
+        CancelInvoke(nameof(AudioCronometro));
+    }
 }

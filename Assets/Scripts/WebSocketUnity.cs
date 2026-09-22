@@ -28,6 +28,7 @@ public class MensagemParFormado
     public string tipo;
     public string partidaId;
     public string materia;
+    public int tempoAbertura;
 }
 
 [Serializable]
@@ -87,6 +88,8 @@ public class WebSocketUnity : MonoBehaviour
 
     private bool escolhaTemaEmAndamento;
     private bool carregandoCenaPerguntas;
+    private bool preparandoPartida;
+    private bool tratandoDesconexaoAdversario;
 
     private WebSocket websocket;
 
@@ -124,6 +127,38 @@ public class WebSocketUnity : MonoBehaviour
         }
     }
 
+    private void CarregarCenaPerguntasUmaVez()
+    {
+        if (carregandoCenaPerguntas)
+        {
+            Debug.Log(
+                "A cena Perguntas já está sendo carregada. " +
+                "Solicitação ignorada."
+            );
+
+            return;
+        }
+
+        if (
+            SceneManager.GetActiveScene().name == "Perguntas"
+        )
+        {
+            Debug.Log(
+                "A cena Perguntas já está ativa."
+            );
+
+            return;
+        }
+
+        carregandoCenaPerguntas = true;
+
+        Debug.Log(
+            "Carregando a cena Perguntas..."
+        );
+
+        SceneManager.LoadScene("Perguntas");
+    }
+
     private void OnSceneLoaded(
         Scene scene,
         LoadSceneMode mode
@@ -133,7 +168,7 @@ public class WebSocketUnity : MonoBehaviour
         {
             escolhaTemaEmAndamento = false;
             carregandoCenaPerguntas = false;
-            partidaId = string.Empty;
+           
         }
 
         StartCoroutine(
@@ -147,6 +182,16 @@ public class WebSocketUnity : MonoBehaviour
         yield return new WaitForEndOfFrame();
 
         AtualizarReferenciasDaCena();
+
+        if (
+            SceneManager.GetActiveScene().name == "Temas"
+        )
+        {
+            if (canvasAguardando != null)
+            {
+                canvasAguardando.SetActive(false);
+            }
+        }
 
         Debug.Log(
             "Referências atualizadas. Cena atual: " +
@@ -266,79 +311,132 @@ public class WebSocketUnity : MonoBehaviour
         if (materia != null)
         {
             materia.text =
-                "Aguardando outro jogador...";
+                "Matéria: " +
+                materiaEscolhida.ToUpperInvariant() +
+                "\nAguardando outro jogador...";
         }
     }
 
-    private void BloquearBotoesDeTema()
+    private IEnumerator TratarDesconexaoDoAdversario()
     {
-        Scene cenaAtual =
-            SceneManager.GetActiveScene();
-
-        if (!cenaAtual.IsValid() || !cenaAtual.isLoaded)
+        if (tratandoDesconexaoAdversario)
         {
-            return;
+            yield break;
         }
 
-        GameObject[] objetosRaiz =
-            cenaAtual.GetRootGameObjects();
-
-        foreach (GameObject objetoRaiz in objetosRaiz)
-        {
-            Button[] botoes =
-                objetoRaiz.GetComponentsInChildren<Button>(
-                    true
-                );
-
-            foreach (Button botao in botoes)
-            {
-                if (botao == null)
-                {
-                    continue;
-                }
-
-                string nome =
-                    botao.gameObject.name;
-
-                if (nome.StartsWith("Bt"))
-                {
-                    botao.interactable = false;
-                }
-            }
-        }
-    }
-
-    private void CarregarCenaPerguntasUmaVez()
-    {
-        if (carregandoCenaPerguntas)
-        {
-            Debug.Log(
-                "A cena Perguntas já está sendo carregada. " +
-                "Solicitação ignorada."
-            );
-
-            return;
-        }
-
-        if (
-            SceneManager.GetActiveScene().name ==
-            "Perguntas"
-        )
-        {
-            Debug.Log(
-                "A cena Perguntas já está ativa."
-            );
-
-            return;
-        }
-
-        carregandoCenaPerguntas = true;
+        tratandoDesconexaoAdversario = true;
 
         Debug.Log(
-            "Carregando a cena Perguntas..."
+            "O adversário desconectou da partida."
         );
 
-        SceneManager.LoadScene("Perguntas");
+        carregandoCenaPerguntas = false;
+        preparandoPartida = false;
+        escolhaTemaEmAndamento = false;
+
+        partidaId = string.Empty;
+        materiaEscolhida = string.Empty;
+
+        if (
+            SceneManager.GetActiveScene().name != "Temas"
+        )
+        {
+            SceneManager.LoadScene("Temas");
+
+            yield return new WaitUntil(() =>
+                SceneManager.GetActiveScene().name == "Temas"
+            );
+
+            yield return null;
+            yield return null;
+            yield return new WaitForEndOfFrame();
+        }
+
+        AtualizarReferenciasDaCena();
+
+        yield return null;
+
+        // Garante que as referências sejam atualizadas
+        // depois que a cena terminou de carregar.
+        AtualizarReferenciasDaCena();
+
+        if (canvasPrincipal != null)
+        {
+            canvasPrincipal.SetActive(false);
+        }
+
+        if (canvasAguardando != null)
+        {
+            canvasAguardando.SetActive(true);
+        }
+        else
+        {
+            Debug.LogError(
+                "Canvas Aguardando não foi encontrado na cena Temas."
+            );
+        }
+
+        if (materia != null)
+        {
+            materia.text =
+                "O ADVERSÁRIO SAIU DA PARTIDA.\n\n" +
+                "A partida foi encerrada.";
+        }
+        else
+        {
+            Debug.LogError(
+                "Texto materia não foi encontrado na cena Temas."
+            );
+        }
+
+        yield return new WaitForSeconds(4f);
+
+        if (canvasAguardando != null)
+        {
+            canvasAguardando.SetActive(false);
+        }
+
+        if (canvasPrincipal != null)
+        {
+            canvasPrincipal.SetActive(true);
+        }
+
+        tratandoDesconexaoAdversario = false;
+    }
+
+    private IEnumerator PrepararPartidaAntesDoFade()
+    {
+        if (preparandoPartida)
+        {
+            yield break;
+        }
+
+        preparandoPartida = true;
+
+        GarantirReferenciasDaCena();
+
+        if (canvasPrincipal != null)
+        {
+            canvasPrincipal.SetActive(false);
+        }
+
+        if (canvasAguardando != null)
+        {
+            canvasAguardando.SetActive(true);
+        }
+
+        if (materia != null)
+        {
+            materia.text =
+                "ADVERSÁRIO ENCONTRADO!\n\n" +
+                "Preparando partida...";
+        }
+
+        yield return new WaitForSeconds(2f);
+
+        SceneManager.LoadScene("Fade");
+
+        preparandoPartida = false;
     }
 
     private async void Start()
@@ -437,9 +535,9 @@ public class WebSocketUnity : MonoBehaviour
                 if (materia != null)
                 {
                     materia.text =
-                        "Você escolheu " +
-                        materiaEscolhida +
-                        ". Aguardando outro jogador...";
+                        "Matéria: " +
+                        materiaEscolhida.ToUpperInvariant() +
+                        "\nAguardando outro jogador...";
                 }
 
                 return;
@@ -453,9 +551,7 @@ public class WebSocketUnity : MonoBehaviour
             )
             {
                 if (
-                    !string.IsNullOrEmpty(
-                        status.partidaId
-                    )
+                    !string.IsNullOrEmpty(status.partidaId)
                 )
                 {
                     partidaId = status.partidaId;
@@ -463,32 +559,12 @@ public class WebSocketUnity : MonoBehaviour
 
                 MostrarTelaAguardando();
 
-                Debug.Log(
-                    "Nenhum adversário encontrado. " +
-                    "Partida individual iniciada: " +
-                    partidaId
-                );
-
-                TMP_Text aviso = null;
-
-                if (canvasAguardando != null)
+                if (materia != null)
                 {
-                    aviso =
-                        canvasAguardando
-                        .GetComponentInChildren<TMP_Text>(
-                            true
-                        );
-                }
-
-                if (aviso != null)
-                {
-                    aviso.text =
-                        "Nenhum adversário encontrado.\n" +
-                        "Partida individual iniciada!";
-
-                    StartCoroutine(
-                        FadeMensagem(aviso)
-                    );
+                    materia.text =
+                        "Matéria: " +
+                        materiaEscolhida.ToUpperInvariant() +
+                        "\nPartida individual iniciada!";
                 }
 
                 StartCoroutine(
@@ -530,10 +606,14 @@ public class WebSocketUnity : MonoBehaviour
 
             Debug.Log(
                 "Partida multiplayer formada: " +
-                partidaId
+                partidaId +
+                ". Exibindo adversário encontrado."
             );
 
-            CarregarCenaPerguntasUmaVez();
+            StartCoroutine(
+                PrepararPartidaAntesDoFade()
+            );
+
             return;
         }
 
@@ -640,15 +720,27 @@ public class WebSocketUnity : MonoBehaviour
             );
 
         if (
-            fim != null &&
-            fim.tipo == "fim"
-        )
+    fim != null &&
+    fim.tipo == "fim"
+)
         {
             if (
                 !string.IsNullOrEmpty(fim.partidaId) &&
                 fim.partidaId != partidaId
             )
             {
+                return;
+            }
+
+            if (
+                fim.motivo ==
+                "adversarioDesconectado"
+            )
+            {
+                StartCoroutine(
+                    TratarDesconexaoDoAdversario()
+                );
+
                 return;
             }
 
@@ -666,9 +758,7 @@ public class WebSocketUnity : MonoBehaviour
                 "Jogador: " +
                 Score.pontuacaoTotal +
                 " | Oponente: " +
-                Score.pontuacaoOponente +
-                " | Individual: " +
-                Score.partidaIndividual
+                Score.pontuacaoOponente
             );
 
             StartCoroutine(
@@ -698,44 +788,6 @@ public class WebSocketUnity : MonoBehaviour
         CarregarCenaPerguntasUmaVez();
     }
 
-    private IEnumerator FadeMensagem(
-        TMP_Text texto
-    )
-    {
-        if (texto == null)
-        {
-            yield break;
-        }
-
-        texto.alpha = 0f;
-
-        for (
-            float t = 0f;
-            t < 1f;
-            t += Time.deltaTime
-        )
-        {
-            texto.alpha = t;
-            yield return null;
-        }
-
-        texto.alpha = 1f;
-
-        yield return new WaitForSeconds(2f);
-
-        for (
-            float t = 1f;
-            t > 0f;
-            t -= Time.deltaTime
-        )
-        {
-            texto.alpha = t;
-            yield return null;
-        }
-
-        texto.alpha = 0f;
-    }
-
     public async void EnviarMateria(
         string materiaSelecionada
     )
@@ -747,7 +799,6 @@ public class WebSocketUnity : MonoBehaviour
                 "Matéria não enviada."
             );
 
-            escolhaTemaEmAndamento = false;
             return;
         }
 
@@ -761,7 +812,6 @@ public class WebSocketUnity : MonoBehaviour
                 "Matéria inválida."
             );
 
-            escolhaTemaEmAndamento = false;
             return;
         }
 
@@ -787,8 +837,6 @@ public class WebSocketUnity : MonoBehaviour
         }
         catch (Exception ex)
         {
-            escolhaTemaEmAndamento = false;
-
             Debug.LogError(
                 "Erro ao enviar matéria: " +
                 ex.Message
@@ -820,6 +868,10 @@ public class WebSocketUnity : MonoBehaviour
             return;
         }
 
+        escolhaTemaEmAndamento = true;
+
+        MostrarTelaAguardando();
+
         string botaoClicado =
             EventSystem.current != null &&
             EventSystem.current.currentSelectedGameObject != null
@@ -842,23 +894,15 @@ public class WebSocketUnity : MonoBehaviour
                 _ => materiaSelecionada
             };
 
-        if (
-            string.IsNullOrWhiteSpace(
-                materiaDoBotao
-            )
-        )
+        if (string.IsNullOrWhiteSpace(materiaDoBotao))
         {
             Debug.LogWarning(
                 "Não foi possível identificar a matéria."
             );
 
+            escolhaTemaEmAndamento = false;
             return;
         }
-
-        escolhaTemaEmAndamento = true;
-
-        BloquearBotoesDeTema();
-        MostrarTelaAguardando();
 
         EnviarMateria(materiaDoBotao);
     }

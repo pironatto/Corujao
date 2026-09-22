@@ -5,15 +5,24 @@ using UnityEngine.UI;
 
 public class BancoDados : MonoBehaviour
 {
-    public Button R1, R2, R3, R4;
+    public Button R1;
+    public Button R2;
+    public Button R3;
+    public Button R4;
+
     public TextMeshProUGUI pergunta;
     public TextMeshProUGUI cronometro;
+
     public MostrarItens mostrarItens;
 
     private string respostaCorreta;
     private string respostaEscolhida;
+
     private float tempoRestante;
+
     private bool respostaEnviada;
+    private bool resultadoProcessado;
+
     private int indicePergunta;
 
     public bool contandoTempo = false;
@@ -54,7 +63,10 @@ public class BancoDados : MonoBehaviour
             return;
         }
 
-        if (pergunta == null || cronometro == null)
+        if (
+            pergunta == null ||
+            cronometro == null
+        )
         {
             Debug.LogError(
                 "Pergunta ou cronometro não foram configurados."
@@ -81,25 +93,38 @@ public class BancoDados : MonoBehaviour
 
         contandoTempo = false;
         respostaEnviada = false;
+        resultadoProcessado = false;
+
         respostaEscolhida = "";
         respostaCorreta = "";
 
-        indicePergunta =
-            Mathf.Clamp(
-                Score.pontosPorPergunta.Length - 1,
-                0,
-                Score.pontosPorPergunta.Length - 1
-            );
-
         pergunta.text = data.itens[2];
 
-        DefinirTextoBotao(R1, data.itens[3]);
-        DefinirTextoBotao(R2, data.itens[4]);
-        DefinirTextoBotao(R3, data.itens[5]);
-        DefinirTextoBotao(R4, data.itens[6]);
+        DefinirTextoBotao(
+            R1,
+            data.itens[3]
+        );
+
+        DefinirTextoBotao(
+            R2,
+            data.itens[4]
+        );
+
+        DefinirTextoBotao(
+            R3,
+            data.itens[5]
+        );
+
+        DefinirTextoBotao(
+            R4,
+            data.itens[6]
+        );
 
         tempoRestante =
-            Mathf.Max(0f, data.tempoTotal);
+            Mathf.Max(
+                0f,
+                data.tempoTotal
+            );
 
         ResetarBotoes();
 
@@ -108,8 +133,7 @@ public class BancoDados : MonoBehaviour
             mostrarItens.opcoesResposta != null
         )
         {
-            mostrarItens.opcoesResposta
-                .SetActive(false);
+            mostrarItens.opcoesResposta.SetActive(false);
         }
 
         StartCoroutine(
@@ -123,14 +147,21 @@ public class BancoDados : MonoBehaviour
     )
     {
         if (botao == null)
+        {
             return;
+        }
 
         TextMeshProUGUI textoBotao =
             botao.GetComponentInChildren
             <TextMeshProUGUI>();
 
         if (textoBotao != null)
-            textoBotao.text = texto.Trim();
+        {
+            textoBotao.text =
+                string.IsNullOrEmpty(texto)
+                    ? ""
+                    : texto.Trim();
+        }
     }
 
     private IEnumerator MostrarOpcoesEIniciarCronometro()
@@ -142,8 +173,7 @@ public class BancoDados : MonoBehaviour
             mostrarItens.opcoesResposta != null
         )
         {
-            mostrarItens.opcoesResposta
-                .SetActive(true);
+            mostrarItens.opcoesResposta.SetActive(true);
         }
 
         ResetarBotoes();
@@ -165,7 +195,9 @@ public class BancoDados : MonoBehaviour
     private void ConfigurarBotao(Button botao)
     {
         if (botao == null)
+        {
             return;
+        }
 
         botao.interactable = true;
         botao.image.color = Color.white;
@@ -185,7 +217,9 @@ public class BancoDados : MonoBehaviour
     private void Update()
     {
         if (!contandoTempo)
+        {
             return;
+        }
 
         tempoRestante -= Time.deltaTime;
 
@@ -194,7 +228,9 @@ public class BancoDados : MonoBehaviour
             cronometro.text =
                 Mathf.Max(
                     0,
-                    Mathf.CeilToInt(tempoRestante)
+                    Mathf.CeilToInt(
+                        tempoRestante
+                    )
                 ).ToString();
         }
 
@@ -254,7 +290,8 @@ public class BancoDados : MonoBehaviour
         );
 
         Debug.Log(
-            "Resposta enviada. Aguardando validação do servidor."
+            "Resposta enviada. " +
+            "Aguardando validação do servidor."
         );
     }
 
@@ -263,27 +300,42 @@ public class BancoDados : MonoBehaviour
     )
     {
         if (respostaEnviada)
+        {
             return;
+        }
 
         respostaEnviada = true;
 
-        WebSocketUnity.Instance?
-            .EnviarResposta(resposta);
+        if (WebSocketUnity.Instance != null)
+        {
+            WebSocketUnity.Instance
+                .EnviarResposta(resposta);
+        }
     }
 
     public void ProcessarResultadoServidor(
         MensagemResultadoResposta resultado
     )
     {
-        if (resultado == null)
+        if (
+            resultado == null ||
+            resultadoProcessado
+        )
+        {
             return;
+        }
 
+        resultadoProcessado = true;
         contandoTempo = false;
 
         respostaCorreta =
-            string.IsNullOrEmpty(resultado.correta)
+            string.IsNullOrEmpty(
+                resultado.correta
+            )
                 ? ""
-                : resultado.correta.Trim().ToUpper();
+                : resultado.correta
+                    .Trim()
+                    .ToUpper();
 
         Score.pontuacaoTotal =
             Mathf.Max(
@@ -299,11 +351,28 @@ public class BancoDados : MonoBehaviour
         {
             Score.pontosPorPergunta[
                 indicePergunta
-            ] = Mathf.Max(
-                0f,
+            ] =
+                Mathf.Max(
+                    0f,
+                    resultado.pontos
+                );
+
+            Debug.Log(
+                "Pontos registrados na pergunta " +
+                (indicePergunta + 1) +
+                ": " +
                 resultado.pontos
             );
         }
+        else
+        {
+            Debug.LogWarning(
+                "Índice de pergunta fora do limite: " +
+                indicePergunta
+            );
+        }
+
+        indicePergunta++;
 
         Button botaoSelecionado =
             ObterBotaoPorResposta(
@@ -331,8 +400,10 @@ public class BancoDados : MonoBehaviour
 
         Debug.Log(
             "Resultado validado pelo servidor. " +
-            "Acertou: " + resultado.acertou +
-            " | Pontos: " + resultado.pontos +
+            "Acertou: " +
+            resultado.acertou +
+            " | Pontos: " +
+            resultado.pontos +
             " | Total: " +
             resultado.pontuacaoTotal
         );
@@ -356,7 +427,12 @@ public class BancoDados : MonoBehaviour
         string resposta
     )
     {
-        return resposta switch
+        if (string.IsNullOrEmpty(resposta))
+        {
+            return null;
+        }
+
+        return resposta.Trim().ToUpper() switch
         {
             "A" => R1,
             "B" => R2,
@@ -392,15 +468,23 @@ public class BancoDados : MonoBehaviour
     private void DesativarBotoes()
     {
         if (R1 != null)
+        {
             R1.interactable = false;
+        }
 
         if (R2 != null)
+        {
             R2.interactable = false;
+        }
 
         if (R3 != null)
+        {
             R3.interactable = false;
+        }
 
         if (R4 != null)
+        {
             R4.interactable = false;
+        }
     }
 }
