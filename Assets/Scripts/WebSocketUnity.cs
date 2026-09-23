@@ -17,6 +17,14 @@ public class MensagemStatus
 }
 
 [Serializable]
+public class MensagemIdentificarUsuario
+{
+    public string tipo;
+    public string usuarioId;
+}
+
+
+[Serializable]
 public class MensagemMateria
 {
     public string materia;
@@ -322,10 +330,15 @@ public class WebSocketUnity : MonoBehaviour
 
         if (materia != null)
         {
+            string materiaExibicao =
+    ObterNomeMateriaExibicao(
+        materiaEscolhida
+    );
+
             materia.text =
-                "Matéria: " +
-                materiaEscolhida.ToUpperInvariant() +
-                "\nAguardando outro jogador...";
+                "Você escolheu  \"" +
+                materiaExibicao +
+                "\"\nAguardando outro jogador...";
         }
     }
 
@@ -496,10 +509,66 @@ public class WebSocketUnity : MonoBehaviour
         Debug.Log(
             "Conectado ao servidor WebSocket!"
         );
+        EnviarIdentificacaoUsuario();
 
         StartCoroutine(
             AtualizarReferenciasDepoisDaCenaCarregar()
         );
+    }
+
+    private async void EnviarIdentificacaoUsuario()
+    {
+        if (!WebSocketEstaAberto())
+        {
+            Debug.LogWarning(
+                "WebSocket ainda não está aberto. " +
+                "Identificação não enviada."
+            );
+
+            return;
+        }
+
+        string usuarioId =
+            PlayerPrefs.GetString(
+                "usuarioId",
+                string.Empty
+            );
+
+        if (string.IsNullOrWhiteSpace(usuarioId))
+        {
+            Debug.LogError(
+                "ID do usuário não encontrado no PlayerPrefs."
+            );
+
+            return;
+        }
+
+        MensagemIdentificarUsuario mensagem =
+            new MensagemIdentificarUsuario
+            {
+                tipo = "identificarUsuario",
+                usuarioId = usuarioId
+            };
+
+        string json =
+            JsonUtility.ToJson(mensagem);
+
+        try
+        {
+            await websocket.SendText(json);
+
+            Debug.Log(
+                "Identificação enviada ao servidor: " +
+                json
+            );
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError(
+                "Erro ao enviar identificação: " +
+                ex.Message
+            );
+        }
     }
 
     private void QuandoReceberMensagem(byte[] bytes)
@@ -546,10 +615,15 @@ public class WebSocketUnity : MonoBehaviour
 
                 if (materia != null)
                 {
+                    string materiaExibicao =
+    ObterNomeMateriaExibicao(
+        materiaEscolhida
+    );
+
                     materia.text =
-                        "Matéria: " +
-                        materiaEscolhida.ToUpperInvariant() +
-                        "\nAguardando outro jogador...";
+                        "Você escolheu  \"" +
+                        materiaExibicao +
+                        "\"\nPartida individual iniciada!";
                 }
 
                 return;
@@ -838,6 +912,33 @@ public class WebSocketUnity : MonoBehaviour
         );
     }
 
+
+    private string ObterNomeMateriaExibicao(
+    string materiaInterna
+)
+    {
+        if (string.IsNullOrWhiteSpace(materiaInterna))
+        {
+            return "";
+        }
+
+        return materiaInterna.Trim().ToLowerInvariant() switch
+        {
+            "historia" => "História",
+            "ciencias" => "Ciências",
+            "matematica" => "Matemática",
+            "fisica" => "Física",
+            "harrypotter" => "Harry Potter",
+            "geografia" => "Geografia",
+            "biologia" => "Biologia",
+            "medicina" => "Medicina",
+            "personagens" => "Personagens",
+            "frasesfilmes" => "Frases de filmes",
+            _ => materiaInterna
+        };
+    }
+
+
     private IEnumerator AguardarFim()
     {
         yield return new WaitForSeconds(2f);
@@ -955,6 +1056,7 @@ public class WebSocketUnity : MonoBehaviour
                 "BtBiologia" => "biologia",
                 "BtMedicina" => "medicina",
                 "BtPersonagens" => "personagens",
+                "BtFrasesFilmes" => "frasesfilmes",
                 _ => materiaSelecionada
             };
 

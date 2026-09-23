@@ -42,7 +42,8 @@ public class ControleTemas : MonoBehaviour
         if (botaoClicado == "BtGeografia") { materia = "geografia"; }
         if (botaoClicado == "BtBiologia") { materia = "biologia"; }
         if (botaoClicado == "BtMedicina") { materia = "medicina"; }
-        if (botaoClicado == "BtMPersonagens") { materia = "personagens"; }
+        if (botaoClicado == "BtPersonagens") { materia = "personagens"; }
+        if (botaoClicado == "BtFrasesFilmes") { materia = "frasesfilmes"; } 
 
 
     }
