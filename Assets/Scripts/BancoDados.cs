@@ -10,6 +10,11 @@ public class BancoDados : MonoBehaviour
     public Button R3;
     public Button R4;
 
+    public GameObject marcadorOponenteR1;
+    public GameObject marcadorOponenteR2;
+    public GameObject marcadorOponenteR3;
+    public GameObject marcadorOponenteR4;
+
     public TextMeshProUGUI pergunta;
     public TextMeshProUGUI cronometro;
 
@@ -127,6 +132,7 @@ public class BancoDados : MonoBehaviour
             );
 
         ResetarBotoes();
+        LimparMarcadoresOponente();
 
         if (
             mostrarItens != null &&
@@ -139,6 +145,72 @@ public class BancoDados : MonoBehaviour
         StartCoroutine(
             MostrarOpcoesEIniciarCronometro()
         );
+    }
+
+
+    private void LimparMarcadoresOponente()
+    {
+        if (marcadorOponenteR1 != null)
+        {
+            marcadorOponenteR1.SetActive(false);
+        }
+
+        if (marcadorOponenteR2 != null)
+        {
+            marcadorOponenteR2.SetActive(false);
+        }
+
+        if (marcadorOponenteR3 != null)
+        {
+            marcadorOponenteR3.SetActive(false);
+        }
+
+        if (marcadorOponenteR4 != null)
+        {
+            marcadorOponenteR4.SetActive(false);
+        }
+    }
+
+    public void MostrarMarcadorOponente(
+        string resposta
+    )
+    {
+        LimparMarcadoresOponente();
+
+        if (string.IsNullOrWhiteSpace(resposta))
+        {
+            return;
+        }
+
+        string respostaNormalizada =
+            resposta.Trim().ToUpper();
+
+        GameObject marcador =
+            respostaNormalizada switch
+            {
+                "A" => marcadorOponenteR1,
+                "B" => marcadorOponenteR2,
+                "C" => marcadorOponenteR3,
+                "D" => marcadorOponenteR4,
+                _ => null
+            };
+
+        if (marcador != null)
+        {
+            marcador.SetActive(true);
+
+            Debug.Log(
+                "Marcador do adversário exibido na resposta: " +
+                respostaNormalizada
+            );
+        }
+        else
+        {
+            Debug.LogWarning(
+                "Nenhum marcador encontrado para a resposta: " +
+                respostaNormalizada
+            );
+        }
     }
 
     private void DefinirTextoBotao(

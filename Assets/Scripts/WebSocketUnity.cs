@@ -70,6 +70,18 @@ public class MensagemPontuacaoOponente
 }
 
 [Serializable]
+public class MensagemResumoRespostas
+{
+    public string tipo;
+    public string partidaId;
+    public string respostaJogador;
+    public string respostaOponente;
+    public bool acertouJogador;
+    public bool acertouOponente;
+}
+
+
+[Serializable]
 public class MensagemFim
 {
     public string tipo;
@@ -681,6 +693,58 @@ public class WebSocketUnity : MonoBehaviour
 
             return;
         }
+
+        MensagemResumoRespostas resumo =
+    JsonUtility.FromJson
+    <MensagemResumoRespostas>(
+        mensagem
+    );
+
+        if (
+            resumo != null &&
+            resumo.tipo == "resumoRespostas"
+        )
+        {
+            if (resumo.partidaId != partidaId)
+            {
+                Debug.LogWarning(
+                    "Resumo recebido para outra partida."
+                );
+
+                return;
+            }
+
+            BancoDados banco =
+                FindFirstObjectByType<BancoDados>();
+
+            if (banco == null)
+            {
+                Debug.LogError(
+                    "BancoDados não foi encontrado " +
+                    "ao processar o resumo das respostas."
+                );
+
+                return;
+            }
+
+            banco.MostrarMarcadorOponente(
+                resumo.respostaOponente
+            );
+
+            Debug.Log(
+                "Resposta do adversário revelada: " +
+                (
+                    string.IsNullOrEmpty(
+                        resumo.respostaOponente
+                    )
+                        ? "SEM RESPOSTA"
+                        : resumo.respostaOponente
+                )
+            );
+
+            return;
+        }
+
 
         MensagemPontuacaoOponente pontuacao =
             JsonUtility.FromJson
