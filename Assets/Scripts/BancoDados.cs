@@ -25,6 +25,10 @@ public class BancoDados : MonoBehaviour
 
     private float tempoRestante;
 
+    private long terminaEmServidorMs;
+    private long diferencaRelogiosMs;
+
+    private bool tempoExpirado;
     private bool respostaEnviada;
     private bool resultadoProcessado;
 
@@ -125,6 +129,29 @@ public class BancoDados : MonoBehaviour
             data.itens[6]
         );
 
+        /*
+         * Calcula a diferença entre o relógio do servidor
+         * e o relógio local do aparelho.
+         */
+        long agoraLocalMs =
+            ObterAgoraLocalEmMs();
+
+        diferencaRelogiosMs =
+            data.servidorAgora -
+            agoraLocalMs;
+
+        /*
+         * Guarda o prazo absoluto oficial.
+         */
+        terminaEmServidorMs =
+    data.terminaEmServidor;
+
+        tempoExpirado = false;
+
+        /*
+         * Mantém o cronômetro em 10 durante
+         * a preparação das alternativas.
+         */
         tempoRestante =
             Mathf.Max(
                 0f,
@@ -142,11 +169,62 @@ public class BancoDados : MonoBehaviour
             mostrarItens.opcoesResposta.SetActive(false);
         }
 
+        AtualizarTextoCronometro();
+
         StartCoroutine(
             MostrarOpcoesEIniciarCronometro()
         );
     }
 
+    private long ObterAgoraLocalEmMs()
+    {
+        return System.DateTimeOffset
+            .UtcNow
+            .ToUnixTimeMilliseconds();
+    }
+
+    private long ObterAgoraServidorEstimadoEmMs()
+    {
+        return ObterAgoraLocalEmMs() +
+               diferencaRelogiosMs;
+    }
+
+
+    private float CalcularTempoRestanteServidor()
+    {
+        if (terminaEmServidorMs <= 0)
+        {
+            return 0f;
+        }
+
+        long agoraServidorMs =
+            ObterAgoraServidorEstimadoEmMs();
+
+        long restanteMs =
+            terminaEmServidorMs -
+            agoraServidorMs;
+
+        return Mathf.Max(
+            0f,
+            restanteMs / 1000f
+        );
+    }
+
+    private void AtualizarTextoCronometro()
+    {
+        if (cronometro == null)
+        {
+            return;
+        }
+
+        cronometro.text =
+            Mathf.CeilToInt(
+                Mathf.Max(
+                    0f,
+                    tempoRestante
+                )
+            ).ToString();
+    }
 
     private void LimparMarcadoresOponente()
     {
@@ -249,10 +327,17 @@ public class BancoDados : MonoBehaviour
         }
 
         ResetarBotoes();
+
+        /*
+         * Recalcula o tempo real restante.
+         * Os dois segundos de espera já foram descontados
+         * pelo relógio absoluto do servidor.
+         */
         IniciarCronometro();
 
         Debug.Log(
-            "Opções de resposta ativadas."
+            "Opções de resposta ativadas. " +
+            "Cronômetro sincronizado com o servidor."
         );
     }
 
@@ -277,9 +362,16 @@ public class BancoDados : MonoBehaviour
 
     public void IniciarCronometro()
     {
-        if (tempoRestante <= 0f)
+        tempoRestante =
+            CalcularTempoRestanteServidor();
+
+        AtualizarTextoCronometro();
+
+        if (
+            tempoRestante <= 0f
+        )
         {
-            EnviarRespostaUmaVez("");
+            ExpirarPergunta();
             return;
         }
 
@@ -293,26 +385,39 @@ public class BancoDados : MonoBehaviour
             return;
         }
 
-        tempoRestante -= Time.deltaTime;
+        tempoRestante =
+            CalcularTempoRestanteServidor();
 
-        if (cronometro != null)
+        AtualizarTextoCronometro();
+
+        if (
+            tempoRestante <= 0f
+        )
         {
-            cronometro.text =
-                Mathf.Max(
-                    0,
-                    Mathf.CeilToInt(
-                        tempoRestante
-                    )
-                ).ToString();
+            ExpirarPergunta();
+        }
+    }
+
+    private void ExpirarPergunta()
+    {
+        if (tempoExpirado)
+        {
+            return;
         }
 
-        if (tempoRestante <= 0f)
-        {
-            tempoRestante = 0f;
-            contandoTempo = false;
+        tempoExpirado = true;
+        tempoRestante = 0f;
+        contandoTempo = false;
 
-            EnviarRespostaUmaVez("");
-        }
+        AtualizarTextoCronometro();
+
+        DesativarBotoes();
+
+        EnviarRespostaUmaVez("");
+
+        Debug.Log(
+            "Tempo da pergunta encerrado pelo relógio do servidor."
+        );
     }
 
     public void BotaoResposta(
@@ -321,7 +426,8 @@ public class BancoDados : MonoBehaviour
     {
         if (
             !contandoTempo ||
-            respostaEnviada
+            respostaEnviada ||
+            tempoExpirado
         )
         {
             return;
@@ -399,6 +505,14 @@ public class BancoDados : MonoBehaviour
 
         resultadoProcessado = true;
         contandoTempo = false;
+        if (
+            resultado.expirada
+        )
+        {
+            tempoRestante = 0f;
+            tempoExpirado = true;
+            AtualizarTextoCronometro();
+        }
 
         respostaCorreta =
             string.IsNullOrEmpty(

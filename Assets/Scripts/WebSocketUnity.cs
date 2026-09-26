@@ -17,6 +17,14 @@ public class MensagemStatus
 }
 
 [Serializable]
+public class MensagemIdentificado
+{
+    public string tipo;
+    public string usuarioId;
+    public string nome;
+}
+
+[Serializable]
 public class MensagemIdentificarUsuario
 {
     public string tipo;
@@ -46,7 +54,14 @@ public class PerguntaData
     public string partidaId;
     public string[] itens;
     public float tempoTotal;
+
+    // Campo antigo, mantido por compatibilidade.
     public long inicio;
+
+    // Campos novos enviados pelo servidor.
+    public long inicioServidor;
+    public long terminaEmServidor;
+    public long servidorAgora;
 }
 
 [Serializable]
@@ -67,6 +82,9 @@ public class MensagemResultadoResposta
     public bool acertou;
     public float pontos;
     public float pontuacaoTotal;
+
+    public bool expirada;
+    public long tempoRestante;
 }
 
 [Serializable]
@@ -593,6 +611,30 @@ public class WebSocketUnity : MonoBehaviour
 
             return;
         }
+        if (
+            mensagem.Contains("\"tipo\":\"usuarioIdentificado\"")
+        )
+        {
+            MensagemIdentificado identificado =
+                JsonUtility.FromJson<MensagemIdentificado>(
+                    mensagem
+                );
+
+            if (
+                identificado != null
+            )
+            {
+                Debug.Log(
+                    "Usuário identificado pela Unity: " +
+                    identificado.nome +
+                    " (" +
+                    identificado.usuarioId +
+                    ")"
+                );
+            }
+
+            return;
+        }
 
         MensagemStatus status =
             JsonUtility.FromJson<MensagemStatus>(
@@ -675,6 +717,28 @@ public class WebSocketUnity : MonoBehaviour
 
                 return;
             }
+            if (
+status != null &&
+status.tipo == "status"
+)
+            {
+                if (
+                    status.mensagem ==
+                    "Escolha a matéria..."
+                )
+                {
+                    Debug.Log(
+                        "Servidor aguardando escolha da matéria."
+                    );
+
+                    return;
+                }
+
+                // mantenha aqui os tratamentos atuais
+            }
+
+
+
         }
 
         MensagemParFormado partida =

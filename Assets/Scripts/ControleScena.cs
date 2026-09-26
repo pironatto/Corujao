@@ -18,4 +18,14 @@ public class ControleScena : MonoBehaviour
     {
         SceneManager.LoadScene("Temas");
     }
+
+    public void VerRanking()
+    {
+        SceneManager.LoadScene("Ranking");
+    }
+
+    public void Configuracoes()
+    {
+        SceneManager.LoadScene("Config");
+    }
 }
