@@ -354,9 +354,10 @@ public class WebSocketUnity : MonoBehaviour
     );
 
             materia.text =
-                "Você escolheu  \"" +
+                "Você escolheu  \"<color=yellow>" +
                 materiaExibicao +
-                "\"\nAguardando outro jogador...";
+                "</color>\"\n\nAguardando outro jogador...";
+
         }
     }
 
@@ -663,9 +664,10 @@ public class WebSocketUnity : MonoBehaviour
     );
 
                     materia.text =
-                        "Você escolheu  \"" +
+                        "Você escolheu  \"<color=yellow>" +
                         materiaExibicao +
-                        "\"\nPartida individual iniciada!";
+                        "</color>\"\n\nPartida Individual iniciando...";
+
                 }
 
                 return;

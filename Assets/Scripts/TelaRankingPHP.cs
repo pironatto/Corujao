@@ -186,7 +186,7 @@ public class TelaRankingPHP : MonoBehaviour
 
         var opcoes = new List<string>
         {
-            "Selecione uma matéria",
+            "Selecione um tema",
             "História",
             "Ciências",
             "Matemática",
