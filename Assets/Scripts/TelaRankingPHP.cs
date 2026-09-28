@@ -16,6 +16,9 @@ public class RankingJogador
     public string id;
     public string nome;
     public int rating;
+    public string faixa_nome;    // 🆕
+    public string faixa_cor;     // 🆕
+    public string faixa_emoji;   // 🆕
     public int melhor_rating;
     public int ultima_variacao_rating;
     public int partidas_rating;
@@ -466,14 +469,8 @@ public class TelaRankingPHP : MonoBehaviour
     /* ============================================================
      * Renderização
      * ============================================================ */
-
     private void ExibirRankingGeral(RankingJogador[] ranking)
     {
-        Debug.Log($"[ExibirRankingGeral] {ranking.Length} jogadores para exibir");
-        Debug.Log($"[ExibirRankingGeral] prefabLinhaRanking: {(prefabLinhaRanking != null ? prefabLinhaRanking.name : "NULL")}");
-        Debug.Log($"[ExibirRankingGeral] containerRanking: {(containerRanking != null ? containerRanking.name : "NULL")}");
-
-
         for (int i = 0; i < ranking.Length; i++)
         {
             RankingJogador jogador = ranking[i];
@@ -486,23 +483,32 @@ public class TelaRankingPHP : MonoBehaviour
             TextMeshProUGUI[] textos =
                 linha.GetComponentsInChildren<TextMeshProUGUI>();
 
-            if (textos.Length >= 5)
+            if (textos.Length < 4)
             {
-                textos[0].text = (i + 1).ToString();
-                textos[1].text = jogador.nome;
-                textos[2].text = jogador.rating.ToString();
-                textos[3].text = jogador.pontos.ToString("F0");
-                textos[4].text = jogador.partidas_vencidas.ToString();
+                Debug.LogWarning(
+                    $"Prefab de linha de ranking precisa de pelo menos 4 " +
+                    $"TextMeshProUGUI. Encontrados: {textos.Length}"
+                );
+                continue;
+            }
+
+            textos[0].text = (i + 1).ToString();
+            textos[1].text = jogador.nome;
+            textos[2].text = jogador.faixa_nome;
+            textos[3].text = jogador.pontos.ToString("F0");
+
+            // 🆕 Colorir a coluna "Nível" com a cor da faixa
+            if (ColorUtility.TryParseHtmlString(jogador.faixa_cor, out Color corFaixa))
+            {
+                textos[2].color = corFaixa;
             }
             else
             {
-                Debug.LogWarning(
-                    "Prefab de linha de ranking precisa de " +
-                    "pelo menos 5 TextMeshProUGUI."
-                );
+                Debug.LogWarning($"Cor inválida para faixa '{jogador.faixa_nome}': {jogador.faixa_cor}");
             }
         }
     }
+
 
     private void ExibirRankingMateria(RankingMateria[] ranking)
     {
@@ -518,14 +524,19 @@ public class TelaRankingPHP : MonoBehaviour
             TextMeshProUGUI[] textos =
                 linha.GetComponentsInChildren<TextMeshProUGUI>();
 
-            if (textos.Length >= 5)
+            if (textos.Length < 4)
             {
-                textos[0].text = (i + 1).ToString();
-                textos[1].text = jogador.nome;
-                textos[2].text = jogador.rating.ToString();
-                textos[3].text = jogador.pontos.ToString("F0");
-                textos[4].text = jogador.partidas_jogadas.ToString();
+                Debug.LogWarning(
+                    $"Prefab de linha de ranking precisa de pelo menos 4 " +
+                    $"TextMeshProUGUI. Encontrados: {textos.Length}"
+                );
+                continue;
             }
+
+            textos[0].text = (i + 1).ToString();        // posição
+            textos[1].text = jogador.nome;              // nome
+            textos[2].text = jogador.rating.ToString(); // rating
+            textos[3].text = jogador.pontos.ToString("F0"); // pontos
         }
     }
 
@@ -543,16 +554,25 @@ public class TelaRankingPHP : MonoBehaviour
             TextMeshProUGUI[] textos =
                 linha.GetComponentsInChildren<TextMeshProUGUI>();
 
-            if (textos.Length >= 6)
+            // Seu prefab de histórico tem 6 campos (data, materia,
+            // resultado, pontuacao, acertos, variação). Ajuste o número
+            // se for diferente.
+            if (textos.Length < 6)
             {
-                textos[0].text = FormatarData(partida.saiu_em);
-                textos[1].text = (partida.materia ?? "").ToUpperInvariant();
-                textos[2].text = FormatarResultado(partida.resultado);
-                textos[3].text = partida.pontuacao.ToString("F0");
-                textos[4].text =
-                    $"{partida.respostas_corretas}/{partida.respostas_totais}";
-                textos[5].text = FormatarVariacao(partida.variacao_rating);
+                Debug.LogWarning(
+                    $"Prefab de histórico precisa de pelo menos 6 " +
+                    $"TextMeshProUGUI. Encontrados: {textos.Length}"
+                );
+                continue;
             }
+
+            textos[0].text = FormatarData(partida.saiu_em);
+            textos[1].text = (partida.materia ?? "").ToUpperInvariant();
+            textos[2].text = FormatarResultado(partida.resultado);
+            textos[3].text = partida.pontuacao.ToString("F0");
+            textos[4].text =
+                $"{partida.respostas_corretas}/{partida.respostas_totais}";
+            textos[5].text = FormatarVariacao(partida.variacao_rating);
         }
     }
 

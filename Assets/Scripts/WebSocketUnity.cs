@@ -116,7 +116,17 @@ public class MensagemFim
     public bool partidaIndividual;
     public float pontuacaoJogador;
     public float pontuacaoOponente;
+
+
+    // 🆕 Campos de rating
+    public int ratingAnterior;
+    public int ratingNovo;
+    public int variacaoRating;
+    public string faixaAntes;
+    public string faixaDepois;
+    public bool subiuFaixa;
 }
+
 
 public class WebSocketUnity : MonoBehaviour
 {
@@ -927,6 +937,7 @@ status.tipo == "status"
     fim != null &&
     fim.tipo == "fim"
 )
+
         {
             if (
                 !string.IsNullOrEmpty(fim.partidaId) &&
@@ -949,7 +960,7 @@ status.tipo == "status"
             }
 
             Score.pontuacaoTotal =
-                fim.pontuacaoJogador;
+    fim.pontuacaoJogador;
 
             Score.pontuacaoOponente =
                 fim.pontuacaoOponente;
@@ -957,12 +968,28 @@ status.tipo == "status"
             Score.partidaIndividual =
                 fim.partidaIndividual;
 
+            // 🆕 Copia os dados de rating para o Score
+            Score.ratingAnterior = fim.ratingAnterior;
+            Score.ratingNovo = fim.ratingNovo;
+            Score.variacaoRating = fim.variacaoRating;
+            Score.faixaAntes = fim.faixaAntes;
+            Score.faixaDepois = fim.faixaDepois;
+            Score.subiuFaixa = fim.subiuFaixa;
+
             Debug.Log(
                 "Resultado final recebido. " +
                 "Jogador: " +
                 Score.pontuacaoTotal +
                 " | Oponente: " +
                 Score.pontuacaoOponente
+            );
+
+            Debug.Log(
+                $"[FIM-RATING] " +
+                $"rating: {fim.ratingAnterior} → {fim.ratingNovo} " +
+                $"(var: {fim.variacaoRating}) | " +
+                $"faixa: {fim.faixaAntes} → {fim.faixaDepois} | " +
+                $"subiu: {fim.subiuFaixa}"
             );
 
             StartCoroutine(

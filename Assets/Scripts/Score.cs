@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
 using NativeWebSocket;
 
 public class Score : MonoBehaviour
@@ -13,11 +14,24 @@ public class Score : MonoBehaviour
     public Text textoPontuacaoOponente;
     public Text textoResultado;
 
+    // 🆕 Textos de rating (arraste os TMPs no Inspector)
+    public TextMeshProUGUI textoRating;
+    public TextMeshProUGUI textoVariacao;
+    public TextMeshProUGUI textoSubiuFaixa;
+
     public static float pontuacaoTotal;
     public static float pontuacaoOponente;
     public static float[] pontosPorPergunta = new float[5];
 
     public static bool partidaIndividual;
+
+    // 🆕 Campos de rating (preenchidos no fim da partida multiplayer)
+    public static int ratingAnterior;
+    public static int ratingNovo;
+    public static int variacaoRating;
+    public static string faixaAntes;
+    public static string faixaDepois;
+    public static bool subiuFaixa;
 
     private void Start()
     {
@@ -144,6 +158,7 @@ public class Score : MonoBehaviour
         }
 
         MostrarResultadoFinal();
+        MostrarRatingFinal();
     }
 
     private void MostrarResultadoFinal()
@@ -199,12 +214,89 @@ public class Score : MonoBehaviour
         }
     }
 
+    // ============================================================
+    // 🆕 Exibe as informações de rating na tela
+    // ============================================================
+    private void MostrarRatingFinal()
+    {
+        // Partida individual → esconde tudo
+        if (partidaIndividual)
+        {
+            if (textoRating != null)
+                textoRating.gameObject.SetActive(false);
+
+            if (textoVariacao != null)
+                textoVariacao.gameObject.SetActive(false);
+
+            if (textoSubiuFaixa != null)
+                textoSubiuFaixa.gameObject.SetActive(false);
+
+            return;
+        }
+
+        // ---- TxtRating ----
+        if (textoRating != null)
+        {
+            textoRating.gameObject.SetActive(true);
+            textoRating.text =
+                $"Rating: {ratingAnterior} → {ratingNovo}";
+            textoRating.color = Color.white;
+        }
+
+        // ---- TxtVariacao ----
+        if (textoVariacao != null)
+        {
+            textoVariacao.gameObject.SetActive(true);
+
+            if (variacaoRating > 0)
+            {
+                textoVariacao.text = $"▲ +{variacaoRating}";
+                textoVariacao.color = Color.green;
+            }
+            else if (variacaoRating < 0)
+            {
+                textoVariacao.text = $"▼ {variacaoRating}";
+                textoVariacao.color = Color.red;
+            }
+            else
+            {
+                textoVariacao.text = "— 0";
+                textoVariacao.color = Color.gray;
+            }
+        }
+
+        // ---- TxtSubiuFaixa ----
+        if (textoSubiuFaixa != null)
+        {
+            if (subiuFaixa)
+            {
+                textoSubiuFaixa.gameObject.SetActive(true);
+                textoSubiuFaixa.text =
+                    $"Você subiu para {faixaDepois}!";
+                textoSubiuFaixa.color =
+                    new Color(1f, 0.84f, 0f); // dourado
+            }
+            else
+            {
+                textoSubiuFaixa.gameObject.SetActive(false);
+            }
+        }
+    }
+
     public static void ResetarPontuacao()
     {
         pontuacaoTotal = 0f;
         pontuacaoOponente = 0f;
         pontosPorPergunta = new float[5];
         partidaIndividual = false;
+
+        // 🆕 Zera os campos de rating
+        ratingAnterior = 0;
+        ratingNovo = 0;
+        variacaoRating = 0;
+        faixaAntes = null;
+        faixaDepois = null;
+        subiuFaixa = false;
     }
 
     public async void EscolherTema()
