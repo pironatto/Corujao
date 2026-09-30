@@ -1760,6 +1760,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1940598942}
   - component: {fileID: 1940598941}
+  - component: {fileID: 1940598943}
   m_Layer: 0
   m_Name: GameController
   m_TagString: Untagged
@@ -1779,6 +1780,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bcafdfcbd692e9b42ad5b5fee8309b45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  tempoInicial: 5
   BarraProgresso: {fileID: 199526307}
   Tempo: {fileID: 1981557740}
   fxSource: {fileID: 1468751383}
@@ -1800,6 +1802,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1940598943
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940598940}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 023402f265e1126428550db8ef0f6b56, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NomesJogadores
+  textoNomeJogador: {fileID: 814699837}
+  textoNomeOponente: {fileID: 970084129}
 --- !u!1 &1945630986
 GameObject:
   m_ObjectHideFlags: 0

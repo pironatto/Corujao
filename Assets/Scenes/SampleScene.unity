@@ -1361,6 +1361,7 @@ GameObject:
   - component: {fileID: 1990782543}
   - component: {fileID: 1990782545}
   - component: {fileID: 1990782544}
+  - component: {fileID: 1990782546}
   m_Layer: 5
   m_Name: coruja
   m_TagString: Untagged
@@ -1425,6 +1426,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1990782542}
   m_CullTransparentMesh: 1
+--- !u!114 &1990782546
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1990782542}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a29c921efd83aad40bf4d16657017b20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimacaoMascote
+  amplitudeFlutuacao: 10
+  duracaoFlutuacao: 5
+  amplitudePulsacao: 0.04
+  duracaoPulsacao: 5
 --- !u!1 &2119696242
 GameObject:
   m_ObjectHideFlags: 0

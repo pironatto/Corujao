@@ -335,10 +335,6 @@ public class BancoDados : MonoBehaviour
          */
         IniciarCronometro();
 
-        Debug.Log(
-            "Opções de resposta ativadas. " +
-            "Cronômetro sincronizado com o servidor."
-        );
     }
 
     public void ResetarBotoes()
@@ -543,12 +539,6 @@ public class BancoDados : MonoBehaviour
                     resultado.pontos
                 );
 
-            Debug.Log(
-                "Pontos registrados na pergunta " +
-                (indicePergunta + 1) +
-                ": " +
-                resultado.pontos
-            );
         }
         else
         {
@@ -584,15 +574,6 @@ public class BancoDados : MonoBehaviour
             );
         }
 
-        Debug.Log(
-            "Resultado validado pelo servidor. " +
-            "Acertou: " +
-            resultado.acertou +
-            " | Pontos: " +
-            resultado.pontos +
-            " | Total: " +
-            resultado.pontuacaoTotal
-        );
     }
 
     private Button ObterBotao(

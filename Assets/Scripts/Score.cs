@@ -14,10 +14,15 @@ public class Score : MonoBehaviour
     public Text textoPontuacaoOponente;
     public Text textoResultado;
 
-    // 🆕 Textos de rating (arraste os TMPs no Inspector)
+    // Textos de rating (arraste os TMPs no Inspector)
     public TextMeshProUGUI textoRating;
     public TextMeshProUGUI textoVariacao;
     public TextMeshProUGUI textoSubiuFaixa;
+    public GameObject botaoAjudaRating;   // Botão "?"
+
+    // 🆕 Textos de nome
+    public Text textoNomeJogadorA;
+    public Text textoNomeJogadorB;
 
     public static float pontuacaoTotal;
     public static float pontuacaoOponente;
@@ -25,7 +30,11 @@ public class Score : MonoBehaviour
 
     public static bool partidaIndividual;
 
-    // 🆕 Campos de rating (preenchidos no fim da partida multiplayer)
+    // 🆕 Nomes reais dos jogadores
+    public static string nomeJogador;
+    public static string nomeOponente;
+
+    // Campos de rating (preenchidos no fim da partida multiplayer)
     public static int ratingAnterior;
     public static int ratingNovo;
     public static int variacaoRating;
@@ -117,6 +126,9 @@ public class Score : MonoBehaviour
 
     private void MostrarResultados()
     {
+        // 🆕 Nomes reais
+        MostrarNomes();
+
         if (textoPontuacaoTotal != null)
         {
             textoPontuacaoTotal.text =
@@ -159,6 +171,48 @@ public class Score : MonoBehaviour
 
         MostrarResultadoFinal();
         MostrarRatingFinal();
+    }
+
+    // ============================================================
+    // 🆕 Exibe os nomes reais dos jogadores
+    // ============================================================
+    private void MostrarNomes()
+    {
+        // ---- Nome do jogador ----
+        if (textoNomeJogadorA != null)
+        {
+            if (!string.IsNullOrEmpty(nomeJogador))
+            {
+                textoNomeJogadorA.text = nomeJogador;
+            }
+            else
+            {
+                // Fallback: mantém o texto que já estava no prefab
+                Debug.LogWarning(
+                    "[Score] nomeJogador vazio — mantendo texto do prefab."
+                );
+            }
+        }
+
+        // ---- Nome do oponente ----
+        if (textoNomeJogadorB != null)
+        {
+            if (partidaIndividual)
+            {
+                // Sem oponente — esconde o texto
+                textoNomeJogadorB.text = "";
+            }
+            else if (!string.IsNullOrEmpty(nomeOponente))
+            {
+                textoNomeJogadorB.text = nomeOponente;
+            }
+            else
+            {
+                Debug.LogWarning(
+                    "[Score] nomeOponente vazio em multiplayer."
+                );
+            }
+        }
     }
 
     private void MostrarResultadoFinal()
@@ -215,7 +269,7 @@ public class Score : MonoBehaviour
     }
 
     // ============================================================
-    // 🆕 Exibe as informações de rating na tela
+    // Exibe as informações de rating na tela
     // ============================================================
     private void MostrarRatingFinal()
     {
@@ -231,8 +285,15 @@ public class Score : MonoBehaviour
             if (textoSubiuFaixa != null)
                 textoSubiuFaixa.gameObject.SetActive(false);
 
+            if (botaoAjudaRating != null)
+                botaoAjudaRating.SetActive(false);
+
             return;
         }
+
+        // Em multiplayer, garante que o botão "?" aparece
+        if (botaoAjudaRating != null)
+            botaoAjudaRating.SetActive(true);
 
         // ---- TxtRating ----
         if (textoRating != null)
@@ -290,7 +351,11 @@ public class Score : MonoBehaviour
         pontosPorPergunta = new float[5];
         partidaIndividual = false;
 
-        // 🆕 Zera os campos de rating
+        // 🆕 Zera os nomes
+        nomeJogador = null;
+        nomeOponente = null;
+
+        // Zera os campos de rating
         ratingAnterior = 0;
         ratingNovo = 0;
         variacaoRating = 0;

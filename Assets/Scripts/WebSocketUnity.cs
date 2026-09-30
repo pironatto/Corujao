@@ -22,6 +22,7 @@ public class MensagemIdentificado
     public string tipo;
     public string usuarioId;
     public string nome;
+    public string avatarUrl;
 }
 
 [Serializable]
@@ -45,6 +46,10 @@ public class MensagemParFormado
     public string partidaId;
     public string materia;
     public int tempoAbertura;
+
+    // 🆕 Nomes enviados pelo backend
+    public string nomeJogador;
+    public string nomeOponente;
 }
 
 [Serializable]
@@ -117,6 +122,9 @@ public class MensagemFim
     public float pontuacaoJogador;
     public float pontuacaoOponente;
 
+    // 🆕 Nomes reais
+    public string nomeJogador;
+    public string nomeOponente;
 
     // 🆕 Campos de rating
     public int ratingAnterior;
@@ -148,6 +156,13 @@ public class WebSocketUnity : MonoBehaviour
 
     [HideInInspector]
     public string partidaId;
+
+    // 🆕 Nomes dos jogadores da partida atual
+    [HideInInspector]
+    public string nomeJogadorAtual;
+
+    [HideInInspector]
+    public string nomeOponenteAtual;
 
     public WebSocket Websocket => websocket;
 
@@ -216,7 +231,6 @@ public class WebSocketUnity : MonoBehaviour
         {
             escolhaTemaEmAndamento = false;
             carregandoCenaPerguntas = false;
-           
         }
 
         StartCoroutine(
@@ -359,15 +373,14 @@ public class WebSocketUnity : MonoBehaviour
         if (materia != null)
         {
             string materiaExibicao =
-    ObterNomeMateriaExibicao(
-        materiaEscolhida
-    );
+                ObterNomeMateriaExibicao(
+                    materiaEscolhida
+                );
 
             materia.text =
                 "Você escolheu  \"<color=yellow>" +
                 materiaExibicao +
                 "</color>\"\n\nAguardando outro jogador...";
-
         }
     }
 
@@ -622,6 +635,7 @@ public class WebSocketUnity : MonoBehaviour
 
             return;
         }
+
         if (
             mensagem.Contains("\"tipo\":\"usuarioIdentificado\"")
         )
@@ -631,9 +645,7 @@ public class WebSocketUnity : MonoBehaviour
                     mensagem
                 );
 
-            if (
-                identificado != null
-            )
+            if (identificado != null)
             {
                 Debug.Log(
                     "Usuário identificado pela Unity: " +
@@ -642,6 +654,26 @@ public class WebSocketUnity : MonoBehaviour
                     identificado.usuarioId +
                     ")"
                 );
+
+                // 🆕 Salva o nome no PlayerPrefs pra usar na tela Config
+                if (!string.IsNullOrEmpty(identificado.nome))
+                {
+                    PlayerPrefs.SetString("usuarioNome", identificado.nome);
+                }
+
+                // 🆕 Salva o avatarUrl no PlayerPrefs
+                if (!string.IsNullOrEmpty(identificado.avatarUrl))
+                {
+                    PlayerPrefs.SetString("avatarUrl", identificado.avatarUrl);
+                    Debug.Log(
+                        "[WebSocketUnity] Avatar salvo no PlayerPrefs: " +
+                        identificado.avatarUrl
+                    );
+                }
+                PlayerPrefs.Save();
+                
+
+
             }
 
             return;
@@ -669,15 +701,14 @@ public class WebSocketUnity : MonoBehaviour
                 if (materia != null)
                 {
                     string materiaExibicao =
-    ObterNomeMateriaExibicao(
-        materiaEscolhida
-    );
+                        ObterNomeMateriaExibicao(
+                            materiaEscolhida
+                        );
 
                     materia.text =
                         "Você escolheu  \"<color=yellow>" +
                         materiaExibicao +
                         "</color>\"\n\nPartida Individual iniciando...";
-
                 }
 
                 return;
@@ -690,6 +721,8 @@ public class WebSocketUnity : MonoBehaviour
                 )
             )
             {
+                Score.ResetarPontuacao(); // 🆕 Zera pontuação ao começar partida individual
+
                 if (
                     !string.IsNullOrEmpty(status.partidaId)
                 )
@@ -729,28 +762,18 @@ public class WebSocketUnity : MonoBehaviour
 
                 return;
             }
+
             if (
-status != null &&
-status.tipo == "status"
-)
+                status.mensagem ==
+                "Escolha a matéria..."
+            )
             {
-                if (
-                    status.mensagem ==
-                    "Escolha a matéria..."
-                )
-                {
-                    Debug.Log(
-                        "Servidor aguardando escolha da matéria."
-                    );
+                Debug.Log(
+                    "Servidor aguardando escolha da matéria."
+                );
 
-                    return;
-                }
-
-                // mantenha aqui os tratamentos atuais
+                return;
             }
-
-
-
         }
 
         MensagemParFormado partida =
@@ -763,8 +786,14 @@ status.tipo == "status"
             partida.tipo == "parFormado"
         )
         {
+            Score.ResetarPontuacao(); // 🆕 Zera pontuação ao começar nova partida
+
             partidaId = partida.partidaId;
             materiaEscolhida = partida.materia;
+
+            // 🆕 Guarda os nomes dos jogadores
+            nomeJogadorAtual = partida.nomeJogador;
+            nomeOponenteAtual = partida.nomeOponente;
 
             Debug.Log(
                 "Partida multiplayer formada: " +
@@ -845,10 +874,10 @@ status.tipo == "status"
         }
 
         MensagemResumoRespostas resumo =
-    JsonUtility.FromJson
-    <MensagemResumoRespostas>(
-        mensagem
-    );
+            JsonUtility.FromJson
+            <MensagemResumoRespostas>(
+                mensagem
+            );
 
         if (
             resumo != null &&
@@ -934,10 +963,9 @@ status.tipo == "status"
             );
 
         if (
-    fim != null &&
-    fim.tipo == "fim"
-)
-
+            fim != null &&
+            fim.tipo == "fim"
+        )
         {
             if (
                 !string.IsNullOrEmpty(fim.partidaId) &&
@@ -960,7 +988,7 @@ status.tipo == "status"
             }
 
             Score.pontuacaoTotal =
-    fim.pontuacaoJogador;
+                fim.pontuacaoJogador;
 
             Score.pontuacaoOponente =
                 fim.pontuacaoOponente;
@@ -968,7 +996,11 @@ status.tipo == "status"
             Score.partidaIndividual =
                 fim.partidaIndividual;
 
-            // 🆕 Copia os dados de rating para o Score
+            // 🆕 Nomes reais
+            Score.nomeJogador = fim.nomeJogador;
+            Score.nomeOponente = fim.nomeOponente;
+
+            // Campos de rating
             Score.ratingAnterior = fim.ratingAnterior;
             Score.ratingNovo = fim.ratingNovo;
             Score.variacaoRating = fim.variacaoRating;
@@ -982,14 +1014,6 @@ status.tipo == "status"
                 Score.pontuacaoTotal +
                 " | Oponente: " +
                 Score.pontuacaoOponente
-            );
-
-            Debug.Log(
-                $"[FIM-RATING] " +
-                $"rating: {fim.ratingAnterior} → {fim.ratingNovo} " +
-                $"(var: {fim.variacaoRating}) | " +
-                $"faixa: {fim.faixaAntes} → {fim.faixaDepois} | " +
-                $"subiu: {fim.subiuFaixa}"
             );
 
             StartCoroutine(
@@ -1007,8 +1031,8 @@ status.tipo == "status"
 
 
     private string ObterNomeMateriaExibicao(
-    string materiaInterna
-)
+        string materiaInterna
+    )
     {
         if (string.IsNullOrWhiteSpace(materiaInterna))
         {

@@ -554,9 +554,6 @@ public class TelaRankingPHP : MonoBehaviour
             TextMeshProUGUI[] textos =
                 linha.GetComponentsInChildren<TextMeshProUGUI>();
 
-            // Seu prefab de histórico tem 6 campos (data, materia,
-            // resultado, pontuacao, acertos, variação). Ajuste o número
-            // se for diferente.
             if (textos.Length < 6)
             {
                 Debug.LogWarning(
@@ -572,7 +569,22 @@ public class TelaRankingPHP : MonoBehaviour
             textos[3].text = partida.pontuacao.ToString("F0");
             textos[4].text =
                 $"{partida.respostas_corretas}/{partida.respostas_totais}";
+
+            // 🆕 Variação com cor dinâmica
             textos[5].text = FormatarVariacao(partida.variacao_rating);
+
+            if (partida.variacao_rating > 0)
+            {
+                textos[5].color = Color.green;
+            }
+            else if (partida.variacao_rating < 0)
+            {
+                textos[5].color = Color.red;
+            }
+            else
+            {
+                textos[5].color = Color.gray;
+            }
         }
     }
 
@@ -606,10 +618,22 @@ public class TelaRankingPHP : MonoBehaviour
     {
         if (string.IsNullOrEmpty(dataSql)) return "—";
 
-        /* MySQL manda "YYYY-MM-DD HH:MM:SS" */
-        if (DateTime.TryParse(dataSql, out DateTime data))
+        /*
+         * O backend SEMPRE envia este campo em UTC.
+         * (MySQL armazena em UTC; PHP repassa cru; Node/JS usa Date UTC.)
+         *
+         * Forçamos o parse como UTC e depois convertemos
+         * para o fuso local do dispositivo do jogador.
+         */
+        if (DateTime.TryParse(
+            dataSql,
+            null,
+            System.Globalization.DateTimeStyles.AssumeUniversal
+                | System.Globalization.DateTimeStyles.AdjustToUniversal,
+            out DateTime dataUtc))
         {
-            return data.ToString("dd/MM HH:mm");
+            DateTime dataLocal = dataUtc.ToLocalTime();
+            return dataLocal.ToString("dd/MM HH:mm");
         }
 
         return dataSql;

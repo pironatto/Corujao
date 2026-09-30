@@ -3417,7 +3417,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1917799254
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3491,6 +3491,7 @@ GameObject:
   - component: {fileID: 1944760868}
   - component: {fileID: 1944760867}
   - component: {fileID: 1944760870}
+  - component: {fileID: 1944760871}
   m_Layer: 0
   m_Name: GameController
   m_TagString: Untagged
@@ -3577,6 +3578,23 @@ MonoBehaviour:
   textoRating: {fileID: 0}
   textoVariacao: {fileID: 0}
   textoSubiuFaixa: {fileID: 0}
+  botaoAjudaRating: {fileID: 0}
+  textoNomeJogadorA: {fileID: 0}
+  textoNomeJogadorB: {fileID: 0}
+--- !u!114 &1944760871
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1944760866}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 023402f265e1126428550db8ef0f6b56, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NomesJogadores
+  textoNomeJogador: {fileID: 1718732357}
+  textoNomeOponente: {fileID: 1703677936}
 --- !u!1 &1958428085
 GameObject:
   m_ObjectHideFlags: 0

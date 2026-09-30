@@ -26,7 +26,18 @@ public class Login : MonoBehaviour
                 UnityServices.State
             );
 
-            await SignInAnonymouslyAsync();
+            // 🆕 Agora retorna bool — se falhar, paramos aqui
+            bool logado = await SignInAnonymouslyAsync();
+
+            if (!logado)
+            {
+                Debug.LogError(
+                    "Falha no login anônimo. Abrindo painel de cadastro."
+                );
+
+                PanelCadastro?.SetActive(true);
+                return;
+            }
 
             StartCoroutine(
                 VerificaCadastro()
@@ -39,6 +50,7 @@ public class Login : MonoBehaviour
                 ex.Message
             );
 
+            Debug.LogException(ex);
             PanelCadastro?.SetActive(true);
         }
     }
@@ -78,6 +90,9 @@ public class Login : MonoBehaviour
                 )
         )
         {
+            // 🆕 Timeout de 10s — evita travar se o servidor não responder
+            cadastroUsuario.timeout = 10;
+
             yield return cadastroUsuario.SendWebRequest();
 
             if (
@@ -111,7 +126,7 @@ public class Login : MonoBehaviour
                     "Usuário já cadastrado. " +
                     "Entrando no jogo..."
                 );
-
+                yield return new WaitForSeconds(5f);
                 SceneManager.LoadScene("Config");
             }
             else
@@ -125,20 +140,25 @@ public class Login : MonoBehaviour
         }
     }
 
-    public async Task SignInAnonymouslyAsync()
+    // 🆕 Agora retorna bool em vez de Task
+    public async Task<bool> SignInAnonymouslyAsync()
     {
         try
         {
             await AuthenticationService.Instance
                 .SignInAnonymouslyAsync();
+
+            return true;
         }
         catch (AuthenticationException ex)
         {
             Debug.LogException(ex);
+            return false;
         }
         catch (RequestFailedException ex)
         {
             Debug.LogException(ex);
+            return false;
         }
     }
 }
