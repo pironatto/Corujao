@@ -1505,7 +1505,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1517733435}
         m_TargetAssemblyTypeName: ControleScena, Assembly-CSharp
-        m_MethodName: VerRanking
+        m_MethodName: AbrirRanking
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1725,7 +1725,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1517733435}
         m_TargetAssemblyTypeName: ControleScena, Assembly-CSharp
-        m_MethodName: EscolherTema
+        m_MethodName: AbrirTemas
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

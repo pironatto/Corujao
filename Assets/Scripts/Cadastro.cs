@@ -3,7 +3,6 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using TMPro;
-using JetBrains.Annotations;
 
 public class Cadastro : MonoBehaviour
 {

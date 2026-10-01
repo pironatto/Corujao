@@ -2369,6 +2369,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1311061076}
   - component: {fileID: 1311061075}
+  - component: {fileID: 1311061077}
   m_Layer: 0
   m_Name: GameControl
   m_TagString: Untagged
@@ -2388,11 +2389,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4af9d43f3bc18b49839b789b86fc3d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WebSocketUnity
-  canvasPrincipal: {fileID: 1069808511}
-  canvasAguardando: {fileID: 1106669331}
-  materia: {fileID: 1628778521}
   materiaEscolhida: 
   partidaId: 
+  nomeJogadorAtual: 
+  nomeOponenteAtual: 
 --- !u!4 &1311061076
 Transform:
   m_ObjectHideFlags: 0
@@ -2408,6 +2408,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1311061077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1311061074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c062d7e664d21854c83984aebf7c1c88, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameSessionController
+  canvasPrincipal: {fileID: 1069808511}
+  canvasAguardando: {fileID: 1106669331}
+  materia: {fileID: 1628778521}
 --- !u!1 &1337562009
 GameObject:
   m_ObjectHideFlags: 0

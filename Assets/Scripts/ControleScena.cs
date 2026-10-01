@@ -3,29 +3,18 @@ using UnityEngine.SceneManagement;
 
 public class ControleScena : MonoBehaviour
 {
-    public void ChamarFade()
+    public void AbrirConfiguracoes()
     {
         SceneManager.LoadScene("Config");
     }
 
-    public void MudarCena()
+    public void AbrirTemas()
     {
         SceneManager.LoadScene("Temas");
     }
 
-    // Método recomendado para ligar diretamente ao botão
-    public void EscolherTema()
-    {
-        SceneManager.LoadScene("Temas");
-    }
-
-    public void VerRanking()
+    public void AbrirRanking()
     {
         SceneManager.LoadScene("Ranking");
-    }
-
-    public void Configuracoes()
-    {
-        SceneManager.LoadScene("Config");
     }
 }

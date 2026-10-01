@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 
 public class Login : MonoBehaviour
 {
-    private string Usuario;
+    private string usuario;
 
     [HideInInspector]
     public string IdUsuario;
@@ -21,35 +21,22 @@ public class Login : MonoBehaviour
         {
             await UnityServices.InitializeAsync();
 
-            Debug.Log(
-                "UnityServices iniciado: " +
-                UnityServices.State
-            );
+            Debug.Log("UnityServices iniciado: " + UnityServices.State);
 
-            // 🆕 Agora retorna bool — se falhar, paramos aqui
             bool logado = await SignInAnonymouslyAsync();
 
             if (!logado)
             {
-                Debug.LogError(
-                    "Falha no login anônimo. Abrindo painel de cadastro."
-                );
-
+                Debug.LogError("Falha no login anônimo. Abrindo painel de cadastro.");
                 PanelCadastro?.SetActive(true);
                 return;
             }
 
-            StartCoroutine(
-                VerificaCadastro()
-            );
+            StartCoroutine(VerificaCadastro());
         }
         catch (System.Exception ex)
         {
-            Debug.LogError(
-                "Erro ao iniciar autenticação: " +
-                ex.Message
-            );
-
+            Debug.LogError("Erro ao iniciar autenticação: " + ex.Message);
             Debug.LogException(ex);
             PanelCadastro?.SetActive(true);
         }
@@ -59,95 +46,59 @@ public class Login : MonoBehaviour
     {
         yield return new WaitUntil(() =>
             AuthenticationService.Instance != null &&
-            !string.IsNullOrEmpty(
-                AuthenticationService.Instance.PlayerId
-            )
+            !string.IsNullOrEmpty(AuthenticationService.Instance.PlayerId)
         );
 
-        IdUsuario =
-            AuthenticationService.Instance.PlayerId;
+        IdUsuario = AuthenticationService.Instance.PlayerId;
 
-        Debug.Log(
-            "ID do usuário: " +
-            IdUsuario
-        );
+        Debug.Log("ID do usuário: " + IdUsuario);
 
-        PlayerPrefs.SetString(
-            "usuarioId",
-            IdUsuario
-        );
-
+        PlayerPrefs.SetString("usuarioId", IdUsuario);
         PlayerPrefs.Save();
 
         WWWForm form = new WWWForm();
         form.AddField("id", IdUsuario);
 
-        using (
-            UnityWebRequest cadastroUsuario =
-                UnityWebRequest.Post(
-                    "https://zeleystudios.online/corujao/consulta",
-                    form
-                )
-        )
+        using (UnityWebRequest cadastroUsuario = UnityWebRequest.Post(
+            "https://zeleystudios.online/corujao/consulta",
+            form))
         {
-            // 🆕 Timeout de 10s — evita travar se o servidor não responder
             cadastroUsuario.timeout = 10;
 
             yield return cadastroUsuario.SendWebRequest();
 
-            if (
-                cadastroUsuario.result !=
-                UnityWebRequest.Result.Success
-            )
+            if (cadastroUsuario.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError(
-                    "Erro ao consultar cadastro: " +
-                    cadastroUsuario.error
-                );
-
+                Debug.LogError("Erro ao consultar cadastro: " + cadastroUsuario.error);
                 PanelCadastro?.SetActive(true);
                 yield break;
             }
 
-            string resposta =
-                cadastroUsuario.downloadHandler != null
-                    ? cadastroUsuario.downloadHandler.text
-                    : string.Empty;
+            string resposta = cadastroUsuario.downloadHandler != null
+                ? cadastroUsuario.downloadHandler.text
+                : string.Empty;
 
-            Usuario =
-                resposta.Trim();
+            usuario = resposta.Trim();
 
-            if (
-                !string.IsNullOrEmpty(IdUsuario) &&
-                IdUsuario == Usuario
-            )
+            if (!string.IsNullOrEmpty(IdUsuario) && IdUsuario == usuario)
             {
-                Debug.Log(
-                    "Usuário já cadastrado. " +
-                    "Entrando no jogo..."
-                );
+                Debug.Log("Usuário já cadastrado. Entrando no jogo...");
                 yield return new WaitForSeconds(5f);
                 SceneManager.LoadScene("Config");
             }
             else
             {
-                Debug.Log(
-                    "Usuário precisa se cadastrar."
-                );
-
+                Debug.Log("Usuário precisa se cadastrar.");
                 PanelCadastro?.SetActive(true);
             }
         }
     }
 
-    // 🆕 Agora retorna bool em vez de Task
     public async Task<bool> SignInAnonymouslyAsync()
     {
         try
         {
-            await AuthenticationService.Instance
-                .SignInAnonymouslyAsync();
-
+            await AuthenticationService.Instance.SignInAnonymouslyAsync();
             return true;
         }
         catch (AuthenticationException ex)

@@ -4508,7 +4508,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1517733435}
         m_TargetAssemblyTypeName: ControleScena, Assembly-CSharp
-        m_MethodName: Configuracoes
+        m_MethodName: AbrirConfiguracoes
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
